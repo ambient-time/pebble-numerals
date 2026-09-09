@@ -1,0 +1,689 @@
+<!doctype html>
+<!--
+  Braille: The local time embossed in real Braille across a full sheet of paper that fills the whole page: raised dots stamp up…
+  A clock from Luke Steuber's gallery: https://datapoems.io/clocks/brass/
+  Author: Luke Steuber · lukesteuber.com · @lukesteuber.com (Bluesky)
+  Copyright 2026 Luke Steuber. MIT License. Reuse freely, keep this credit.
+  Libraries loaded from a CDN (if any) keep their own licenses.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Braille</title>
+<meta name="description" content="The local time embossed in real Braille across a full sheet of paper that fills the whole page: raised dots stamp up out of the stock, a number sign ahead of each digit pair for hours, minutes and seconds. The time is announced for screen readers.">
+<meta property="og:title" content="Braille">
+<meta property="og:description" content="The local time embossed in Braille across a full sheet of paper, cycling through five clearly-legible papers: raised dots, a number sign before each digit pair for hours, minutes and seconds.">
+<meta property="og:image" content="https://datapoems.io/clocks/brass/social-card.png">
+<meta property="og:url" content="https://datapoems.io/clocks/brass/">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Braille">
+<meta name="twitter:description" content="The local time embossed in Braille across a full sheet of paper, cycling through five clearly-legible papers: raised dots for hours, minutes and seconds.">
+<meta name="twitter:image" content="https://datapoems.io/clocks/brass/social-card.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  /* Five distinct papers, cycled by tap / Space. Each sets the paper colour,
+     the embossed-dot dome shading (highlight top-left, shadow bottom-right),
+     the faint recessed dimple for OFF slots (so the 2x3 cell still reads), and
+     the ink for labels + controls. Tuned so raised dots are unmistakable. */
+
+  :root {
+    /* cultural palette accent (brass): UI chrome + about-modal theming only.
+       The paper/dot material colours below are intentionally left untouched. */
+    --accent: #d4a96a;
+    --bg: #0e0900;
+    --bg2: #180f00;
+    --ink: rgba(250,238,214,0.86);
+  }
+  :root,
+  :root[data-theme="cream"] {
+    /* 1. Cream Perkins paper: warm stock, soft emboss shadow */
+    --paper-1: #f6efdd;
+    --paper-2: #f1e8d2;
+    --paper-3: #ebe0c5;
+    --paper-glow: rgba(255,250,238,.6);
+    --grain-a: rgba(120,100,60,.022);
+    --grain-b: rgba(120,100,60,.018);
+    --dot-hi: #fffaf0;
+    --dot-mid: #ece0c4;
+    --dot-lo: #c9b98f;
+    --dot-cast: rgba(90,72,38,.28);
+    --dot-rim-hi: rgba(255,255,255,.7);
+    --dot-empty: rgba(120,98,52,.16);
+    --dot-empty-rim: rgba(255,250,238,.5);
+    --ink: #8d7f63;
+    --ctl: rgba(110,98,72,.6);
+    --ctl-strong: #5a4b30;
+  }
+  :root[data-theme="kraft"] {
+    /* 2. Kraft / manila: tan card stock, deeper warm shadow */
+    --paper-1: #d9bd92;
+    --paper-2: #cdac7e;
+    --paper-3: #bd9a69;
+    --paper-glow: rgba(255,244,222,.5);
+    --grain-a: rgba(90,64,28,.05);
+    --grain-b: rgba(90,64,28,.04);
+    --dot-hi: #f4e3c5;
+    --dot-mid: #cdaa78;
+    --dot-lo: #936f41;
+    --dot-cast: rgba(70,48,18,.42);
+    --dot-rim-hi: rgba(255,248,232,.75);
+    --dot-empty: rgba(80,54,22,.24);
+    --dot-empty-rim: rgba(255,246,224,.5);
+    --ink: #6e5532;
+    --ctl: rgba(95,72,40,.7);
+    --ctl-strong: #3f2f16;
+  }
+  :root[data-theme="blueprint"] {
+    /* 3. Blueprint: deep blue paper, pale embossed dots that read like chalk */
+    --paper-1: #1a3a78;
+    --paper-2: #163267;
+    --paper-3: #102650;
+    --paper-glow: rgba(150,190,255,.18);
+    --grain-a: rgba(210,225,255,.05);
+    --grain-b: rgba(210,225,255,.04);
+    --dot-hi: #f3f7ff;
+    --dot-mid: #b9ccef;
+    --dot-lo: #5d7cb4;
+    --dot-cast: rgba(4,14,40,.55);
+    --dot-rim-hi: rgba(255,255,255,.85);
+    --dot-empty: rgba(0,8,30,.40);
+    --dot-empty-rim: rgba(190,212,255,.30);
+    --ink: #b8caec;
+    --ctl: rgba(190,210,250,.7);
+    --ctl-strong: #eef4ff;
+  }
+  :root[data-theme="contrast"] {
+    /* 4. High-Contrast: near-black card, bright raised dots, maximum legibility */
+    --paper-1: #0a0b0d;
+    --paper-2: #060708;
+    --paper-3: #000000;
+    --paper-glow: rgba(255,255,255,.06);
+    --grain-a: rgba(255,255,255,.02);
+    --grain-b: rgba(255,255,255,.015);
+    --dot-hi: #ffffff;
+    --dot-mid: #e8edf2;
+    --dot-lo: #9aa4ae;
+    --dot-cast: rgba(0,0,0,.85);
+    --dot-rim-hi: rgba(255,255,255,.95);
+    --dot-empty: rgba(0,0,0,.6);
+    --dot-empty-rim: rgba(255,255,255,.22);
+    --ink: #d6dde4;
+    --ctl: rgba(220,228,236,.75);
+    --ctl-strong: #ffffff;
+  }
+  :root[data-theme="slate"] {
+    /* 5. Slate: cool grey-blue stock, cool dome slightly lighter than the paper */
+    --paper-1: #2f3742;
+    --paper-2: #28303a;
+    --paper-3: #20262f;
+    --paper-glow: rgba(160,185,215,.14);
+    --grain-a: rgba(190,205,230,.03);
+    --grain-b: rgba(190,205,230,.022);
+    --dot-hi: #b9c6d6;
+    --dot-mid: #6e7c8c;
+    --dot-lo: #3a434f;
+    --dot-cast: rgba(0,0,0,.55);
+    --dot-rim-hi: rgba(225,235,248,.8);
+    --dot-empty: rgba(0,0,0,.34);
+    --dot-empty-rim: rgba(180,200,225,.22);
+    --ink: #aeb9c8;
+    --ctl: rgba(190,202,220,.7);
+    --ctl-strong: #e7edf6;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    min-height: 100dvh;
+    overflow: hidden;
+    display: grid;
+    place-items: center;
+    padding: calc(env(safe-area-inset-top) + 6vmin) 5vmin calc(env(safe-area-inset-bottom) + 6vmin);
+    color: var(--ink);
+    font-family: 'Atkinson Hyperlegible', ui-sans-serif, system-ui, -apple-system, sans-serif;
+    /* the whole page IS the paper: a soft top-left light, faint grain */
+    background:
+      radial-gradient(120% 100% at 28% 12%, var(--paper-glow), transparent 60%),
+      repeating-linear-gradient(0deg, var(--grain-a) 0 1px, transparent 1px 3px),
+      repeating-linear-gradient(90deg, var(--grain-b) 0 1px, transparent 1px 4px),
+      linear-gradient(155deg, var(--paper-1) 0%, var(--paper-2) 56%, var(--paper-3) 100%);
+    transition: color .35s ease;
+  }
+
+  .sheet {
+    --cell: clamp(30px, 8vw, 58px);   /* width of one braille cell (2 dot columns) */
+    --dot: calc(var(--cell) * 0.40);
+    display: grid;
+    justify-items: center;
+    gap: clamp(16px, 3vh, 28px);
+  }
+
+  /* the cells row */
+  .cells {
+    display: flex;
+    align-items: center;
+    gap: calc(var(--cell) * 0.34);
+  }
+  .group { display: flex; gap: calc(var(--cell) * 0.28); }
+
+  .cell {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    grid-template-rows: repeat(3, 1fr);
+    grid-auto-flow: column;             /* DOM order 1..6 -> dot positions 1..6 */
+    gap: calc(var(--cell) * 0.18);
+    width: var(--cell);
+    height: calc(var(--cell) * 1.5);
+  }
+  /* a dot slot: an un-embossed slot reads as a faint recessed dimple, so the
+     2x3 cell structure stays legible (helpful for anyone learning braille);
+     when ON, a raised bump is stamped up over it. */
+  .dot {
+    position: relative;
+    width: var(--dot);
+    height: var(--dot);
+    border-radius: 50%;
+    background: radial-gradient(circle at 50% 40%, var(--dot-empty), transparent 70%);
+    box-shadow: inset 0 1px 1.5px var(--dot-empty), inset 0 -1px 1px var(--dot-empty-rim);
+  }
+  /* the raised, embossed bump (only painted when .on) */
+  .dot::after {
+    content: '';
+    position: absolute; inset: 0;
+    border-radius: 50%;
+    /* paper-coloured dome: highlight top-left, shadow bottom-right */
+    background:
+      radial-gradient(circle at 36% 30%, var(--dot-hi) 0%, var(--dot-mid) 52%, var(--dot-lo) 100%);
+    box-shadow:
+      -0.5px -0.5px 1px var(--dot-rim-hi) inset,
+      1px 1.5px 2px var(--dot-cast) inset,
+      1.5px 2px 3px var(--dot-cast);   /* tiny cast shadow on the paper */
+    opacity: 0;
+    transform: scale(0);
+    transition: transform .22s cubic-bezier(.2,1.3,.4,1), opacity .18s ease;
+  }
+  .dot.on::after { opacity: 1; transform: scale(1); }
+
+  /* understated group labels under the cells */
+  .labels {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: calc(var(--cell) * 0.34);
+    width: 100%;
+  }
+  .labels .lab {
+    display: flex;
+    justify-content: center;
+    flex: none;
+    /* one group spans number-sign + two digit cells (3 cells, 2 inner gaps) */
+    width: calc(var(--cell) * 3 + var(--cell) * 0.56);
+    font-size: clamp(9px, 1.2vw, 11px);
+    letter-spacing: .3em;
+    text-indent: .3em;
+    text-transform: uppercase;
+    color: var(--ink);
+    opacity: .55;
+  }
+
+  .help {
+    position: fixed;
+    top: calc(env(safe-area-inset-top) + .4rem); right: .5rem; z-index: 30;
+    display: flex; align-items: center; justify-content: center;
+    min-width: 44px; min-height: 44px;
+    color: var(--ctl); text-decoration: none;
+    font-weight: 600; font-size: 18px; line-height: 1;
+    transition: color .25s ease;
+  }
+  .help:hover, .help:focus-visible { color: var(--ctl-strong); }
+  .help:focus-visible { outline: 2px solid var(--ctl-strong); outline-offset: 3px; border-radius: 4px; }
+
+  /* paper cycle button: unobtrusive, bottom-left, keyboard-reachable */
+  .toggle {
+    position: fixed;
+    bottom: calc(env(safe-area-inset-bottom) + .4rem); left: .5rem; z-index: 30;
+    display: flex; align-items: center; justify-content: center;
+    min-width: 44px; min-height: 44px;
+    background: none; border: 0; cursor: pointer;
+    color: var(--ctl);
+    font-family: inherit; font-weight: 600; font-size: 18px; line-height: 1;
+    transition: color .25s ease;
+  }
+  .toggle:hover, .toggle:focus-visible { color: var(--ctl-strong); }
+  .toggle:focus-visible { outline: 2px solid var(--ctl-strong); outline-offset: 3px; border-radius: 4px; }
+
+  /* the current paper's name, shown briefly on change then faded out */
+  .theme-name {
+    position: fixed;
+    bottom: calc(env(safe-area-inset-bottom) + .8rem); left: 50%;
+    transform: translateX(-50%);
+    z-index: 30; pointer-events: none;
+    font-size: 11px; letter-spacing: .28em; text-transform: uppercase;
+    color: var(--ctl-strong);
+    opacity: 0; transition: opacity .4s ease;
+  }
+  .theme-name.show { opacity: .8; }
+
+  .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+
+  /* 10-foot / 4K: grow the braille cell beyond its clamp cap and bump the
+     fixed-px chrome so the sheet reads from across the room */
+  @media (min-width: 1900px), (min-height: 1900px) {
+    .sheet { --cell: 86px; }
+    .labels .lab { font-size: 16px; }
+    .help, .toggle { font-size: 27px; min-width: 60px; min-height: 60px; }
+    .theme-name { font-size: 16px; }
+  }
+</style>
+</head>
+<body>
+  <main class="sheet" role="img" aria-label="A full sheet of braille paper showing the current local time embossed in Braille: hours, minutes and seconds, each a number-sign cell followed by two number cells, with raised dots stamping up out of the page. The time is announced for screen readers too.">
+
+    <div class="cells" aria-hidden="true">
+      <div class="group" id="g-h"></div>
+      <div class="group" id="g-m"></div>
+      <div class="group" id="g-s"></div>
+    </div>
+
+    <div class="labels" aria-hidden="true">
+      <span class="lab">Hours</span>
+      <span class="lab">Minutes</span>
+      <span class="lab">Seconds</span>
+    </div>
+  </main>
+
+  <a class="help" href="https://lukesteuber.com" aria-label="Luke Steuber's website">?</a>
+  <div class="sr-only" id="sr" aria-live="polite">Loading clock.</div>
+
+<script>
+(function () {
+  'use strict';
+
+  // ---- paper theme: cycle through five clearly-legible papers, persisted.
+  var root = document.documentElement;
+  var STORE = 'brailler-theme';
+  var THEMES = [
+    { id: 'cream',     name: 'Cream' },
+    { id: 'kraft',     name: 'Kraft' },
+    { id: 'blueprint', name: 'Blueprint' },
+    { id: 'contrast',  name: 'High Contrast' },
+    { id: 'slate',     name: 'Slate' }
+  ];
+  function indexOfTheme(id) {
+    for (var i = 0; i < THEMES.length; i++) if (THEMES[i].id === id) return i;
+    return -1;
+  }
+  // The paper is fixed (no cycling, no button). Honour a previously stored
+  // choice if present, otherwise the first paper.
+  function applyTheme(i) {
+    var t = THEMES[((i % THEMES.length) + THEMES.length) % THEMES.length];
+    root.setAttribute('data-theme', t.id);
+    return t.id;
+  }
+  var stored = null;
+  try { stored = localStorage.getItem(STORE); } catch (e) {}
+  var current = indexOfTheme(stored);
+  if (current < 0) current = 1;   // default: kraft manila paper
+  applyTheme(current);
+
+  // ---------------------------------------------------------------------------
+  // BRAILLE ACCURACY REFERENCE (verified against the Unified English Braille
+  // spec; do not regress). A cell is 6 dots, numbered by physical position:
+  //       1 4        <- top    (col1/row1 , col2/row1)
+  //       2 5        <- middle (col1/row2 , col2/row2)
+  //       3 6        <- bottom (col1/row3 , col2/row3)
+  // DOM/grid mapping: the .cell grid is 2 cols x 3 rows with
+  // grid-auto-flow:column, so the 6 dot spans fill col1 top->bottom
+  // (DOM 0,1,2 = positions 1,2,3) then col2 top->bottom (DOM 3,4,5 =
+  // positions 4,5,6). setCell() lights DOM index i for position i+1.
+  //
+  // Number sign = dots 3,4,5,6 (rendered once per group, before the digits).
+  // Digits are the letters a..j PRECEDED by that number sign:
+  //   1=a=[1]      2=b=[1,2]    3=c=[1,4]    4=d=[1,4,5]  5=e=[1,5]
+  //   6=f=[1,2,4]  7=g=[1,2,4,5] 8=h=[1,2,5]  9=i=[2,4]    0=j=[2,4,5]
+  // (Note 0=j=[2,4,5] and 4=d=[1,4,5] -- the two commonly mis-encoded ones --
+  //  are verified correct here.)
+  // ---------------------------------------------------------------------------
+  var DIGIT = {
+    '1': [1],        '2': [1,2],      '3': [1,4],      '4': [1,4,5],
+    '5': [1,5],      '6': [1,2,4],    '7': [1,2,4,5],  '8': [1,2,5],
+    '9': [2,4],      '0': [2,4,5]
+  };
+  var NUMSIGN = [3,4,5,6];   // the number sign that precedes a run of digits
+
+  // ---- build a cell of 6 dot slots. OFF slots draw nothing on the paper.
+  function buildCell(parent, isSign) {
+    var cell = document.createElement('div');
+    cell.className = 'cell' + (isSign ? ' numsign' : '');
+    var dots = [];
+    for (var i = 0; i < 6; i++) {
+      var el = document.createElement('span');
+      el.className = 'dot';
+      cell.appendChild(el);
+      dots.push(el);
+    }
+    parent.appendChild(cell);
+    return dots;
+  }
+
+  // stamp a cell to `positions`: ON dots rise, OFF dots flatten away.
+  function setCell(dots, positions) {
+    for (var i = 0; i < 6; i++) {
+      dots[i].classList.toggle('on', positions.indexOf(i + 1) !== -1);
+    }
+  }
+
+  function numGroup(id) {
+    var g = document.getElementById(id);
+    setCell(buildCell(g, true), NUMSIGN);   // leading number sign (fixed)
+    return [buildCell(g, false), buildCell(g, false)];
+  }
+  var cellsH = numGroup('g-h');
+  var cellsM = numGroup('g-m');
+  var cellsS = numGroup('g-s');
+
+  var sr = document.getElementById('sr');
+  function pad(n) { return n < 10 ? '0' + n : '' + n; }
+
+  var lastH = '', lastM = '', lastS = '', lastMin = -1, lastSec = -1;
+
+  // (re)stamp a two-cell pair only if it changed.
+  function writePair(cells, str, prev) {
+    if (str === prev) return prev;
+    setCell(cells[0], DIGIT[str[0]]);
+    setCell(cells[1], DIGIT[str[1]]);
+    return str;
+  }
+
+  function tick() {
+    var now = new Date();
+    var hh = now.getHours(), mm = now.getMinutes(), ss = now.getSeconds();
+    if (ss === lastSec) return;
+    lastSec = ss;
+    var H = pad(hh), M = pad(mm), S = pad(ss);
+    lastH = writePair(cellsH, H, lastH);
+    lastM = writePair(cellsM, M, lastM);
+    lastS = writePair(cellsS, S, lastS);
+    if (mm !== lastMin) {
+      lastMin = mm;
+      sr.textContent = H + ':' + M + ' local time, in Braille.';
+    }
+  }
+
+  // simple per-second update, drift-free, paused while hidden
+  var timer = null;
+  function start() {
+    if (timer) clearInterval(timer);
+    tick();
+    timer = setInterval(tick, 250);
+  }
+  document.addEventListener('visibilitychange', function () {
+    if (document.hidden) {
+      if (timer) { clearInterval(timer); timer = null; }
+    } else if (!timer) {
+      start();
+    }
+  });
+
+  start();
+})();
+</script>
+<script>window.aboutClock = {
+  title: 'Braille',
+  board: { label: 'Ciphers', href: '/clocks/numerals/' },
+  body: '<p>Braille punched into a sheet of paper, dots stamped up out of the page the way a Perkins brailler does it. The time runs in three groups: hours, minutes, seconds. Each group opens with a number sign (four raised dots) meaning &#39;digits ahead&#39;, then two cells spell the pair. The letters a through j are 1 through 9 and 0, so one dot is 1 and the j pattern is 0.</p>'
+      + '<p>Louis Braille published the system in 1829 at nineteen, reworking a military code for reading in the dark into a six-dot cell. The Perkins Brailler, the heavy machine that embosses these dots, came a century later in 1951 and is still in classrooms today.</p>'
+      + '<p>Empty dot slots stay as faint dimples instead of vanishing, so you can still see the full two-by-three frame of every cell and learn to read it.</p>'
+};</script>
+<!--inlined:about-modal.js-->
+<script>
+/* about-modal.js — a drop-in "?" explainer for a clock.
+ *
+ * Usage: set the config, then load this file (no build step, no other deps):
+ *   <script>window.aboutClock = { title: 'Maya', body: '<p>…</p>' };<\/script>
+ *   <script src="/clocks/shared/about-modal.js"><\/script>
+ *
+ * If the page already has a `.help` "?" control it upgrades that in place:
+ * clicking it opens an accessible dialog explaining the clock instead of
+ * navigating away (the original href stays as a no-JS fallback). If there is
+ * NO `.help` control, it synthesizes its own house-styled "?" button (top
+ * right) so any clock becomes self-documenting by just including the script.
+ * The synthesized button only appears in the standalone full-page view, never
+ * inside a gallery preview iframe (window.self === window.top), matching the
+ * GoatCounter gate used elsewhere.
+ *
+ * Theming: the dialog reads the page's --accent / --bg / --ink custom
+ * properties when present, falling back to the house phosphor palette.
+ */
+(function () {
+  'use strict';
+
+  var cfg = window.aboutClock;
+  if (!cfg || (!cfg.body && !(cfg.pages && cfg.pages.length))) return;
+
+  function onReady(fn) {
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', fn);
+    } else {
+      fn();
+    }
+  }
+
+  onReady(function () {
+    var trigger = document.querySelector('.help:not(.dice)') || document.querySelector('.help');
+    if (!trigger) {
+      // No "?" control on the page: synthesize one, but only in the standalone
+      // full-page view — it would be dead weight inside a gallery preview iframe.
+      if (window.self !== window.top) return;
+      var hs = document.createElement('style');
+      hs.textContent =
+        ".about-help-auto{position:fixed;top:max(.6rem,env(safe-area-inset-top));" +
+        "right:max(.6rem,env(safe-area-inset-right));z-index:30;display:flex;" +
+        "align-items:center;justify-content:center;min-width:44px;min-height:44px;" +
+        "background:none;border:none;cursor:pointer;color:var(--accent,#5cd9ff);" +
+        "opacity:.55;font:700 19px/1 'Atkinson Hyperlegible',ui-sans-serif,sans-serif;" +
+        "border-radius:6px;transition:opacity .25s ease;}" +
+        ".about-help-auto:hover,.about-help-auto:focus-visible{opacity:1;}" +
+        ".about-help-auto:focus-visible{outline:2px solid currentColor;outline-offset:3px;}";
+      document.head.appendChild(hs);
+      trigger = document.createElement('button');
+      trigger.type = 'button';
+      trigger.className = 'about-help-auto';
+      trigger.setAttribute('aria-label', 'About this clock');
+      trigger.textContent = '?';
+      document.body.appendChild(trigger);
+    }
+
+    // load the reading font (Atkinson Hyperlegible, as used across the other
+    // projects) so explanatory prose never falls back to the console mono.
+    if (!document.querySelector('link[data-about-font]')) {
+      var fl = document.createElement('link');
+      fl.rel = 'stylesheet';
+      fl.setAttribute('data-about-font', '');
+      fl.href = 'https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&display=swap';
+      document.head.appendChild(fl);
+    }
+
+    // ---- styles (injected once) ----------------------------------------
+    var css =
+      '.about-backdrop[hidden]{display:none;}' +
+      '.about-backdrop{position:fixed;inset:0;z-index:1000;display:flex;' +
+      'align-items:center;justify-content:center;padding:24px;' +
+      'background:rgba(2,5,11,0.40);backdrop-filter:blur(8px);' +
+      'opacity:0;transition:opacity .34s ease;}' +
+      '.about-backdrop[data-open]{opacity:1;}' +
+      '.about-card{position:relative;max-width:30rem;width:100%;' +
+      'max-height:calc(100vh - 48px);overflow:auto;' +
+      'background:var(--bg2, var(--bg, #060a14));' +
+      'border:1px solid rgba(150,154,168,0.18);border-radius:12px;' +
+      'box-shadow:0 18px 60px rgba(0,0,0,0.5);' +
+      'padding:26px 26px 20px;' +
+      "font-family:'Atkinson Hyperlegible', ui-sans-serif, system-ui, -apple-system, sans-serif;" +
+      'color:var(--ink, rgba(255,255,255,0.82));' +
+      'transform:translateY(10px);transition:transform .34s ease;}' +
+      '.about-backdrop[data-open] .about-card{transform:none;}' +
+      '.about-card h2{margin:0 0 12px;font-size:13px;font-weight:700;' +
+      'letter-spacing:0.34em;text-transform:uppercase;' +
+      'color:var(--accent, #5cd9ff);padding-right:32px;}' +
+      '.about-card p{margin:0 0 11px;font-size:13px;line-height:1.62;' +
+      'letter-spacing:0.01em;color:var(--ink, rgba(255,255,255,0.82));}' +
+      '.about-body a{color:var(--accent, #5cd9ff);text-decoration:underline;' +
+      'text-decoration-thickness:1px;text-underline-offset:2px;font-weight:600;' +
+      'border-radius:2px;transition:opacity .2s ease;}' +
+      '.about-body a:hover,.about-body a:focus-visible{text-decoration-thickness:2px;opacity:0.82;}' +
+      '.about-pages{display:flex;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;' +
+      '-webkit-overflow-scrolling:touch;scrollbar-width:none;margin:0 -26px;}' +
+      '.about-pages::-webkit-scrollbar{display:none;}' +
+      '.about-page{flex:0 0 100%;scroll-snap-align:center;padding:0 26px;box-sizing:border-box;}' +
+      '.about-page>:first-child{margin-top:0;}' +
+      '.about-dots{display:flex;justify-content:center;gap:9px;margin-top:18px;}' +
+      '.about-dot{width:7px;height:7px;border-radius:50%;border:none;padding:0;cursor:pointer;' +
+      'background:rgba(150,154,168,0.3);transition:background .2s, transform .2s;}' +
+      '.about-dot.on{background:var(--accent, #5cd9ff);transform:scale(1.25);}' +
+      '.about-card .about-map{margin:14px 0 4px;padding-top:13px;' +
+      'border-top:1px solid rgba(128,128,128,0.22);font-size:12px;' +
+      'line-height:1.7;color:var(--dim, rgba(255,255,255,0.52));}' +
+      '.about-card .about-map b{color:var(--accent, #5cd9ff);font-weight:600;}' +
+      '.about-foot{display:flex;justify-content:space-between;align-items:center;' +
+      'margin-top:18px;gap:10px 16px;flex-wrap:wrap;}' +
+      '.about-foot a{color:var(--accent, #5cd9ff);text-decoration:none;' +
+      'font-size:11px;letter-spacing:0.12em;text-transform:uppercase;}' +
+      '.about-foot a.about-board::before{content:"\\2039\\00a0";}' +
+      '.about-foot a:hover,.about-foot a:focus-visible{text-decoration:underline;}' +
+      '.about-close{position:absolute;top:14px;right:14px;width:32px;height:32px;' +
+      'display:flex;align-items:center;justify-content:center;cursor:pointer;' +
+      'background:none;border:none;color:var(--dim, rgba(255,255,255,0.55));' +
+      "font:700 22px/1 'Atkinson Hyperlegible', ui-sans-serif, sans-serif;border-radius:4px;}" +
+      '.about-close:hover,.about-close:focus-visible{color:var(--accent, #5cd9ff);' +
+      'outline:2px solid var(--accent, #5cd9ff);outline-offset:1px;}';
+    var style = document.createElement('style');
+    style.textContent = css;
+    document.head.appendChild(style);
+
+    // ---- dialog DOM -----------------------------------------------------
+    var backdrop = document.createElement('div');
+    backdrop.className = 'about-backdrop';
+    backdrop.hidden = true;
+
+    var card = document.createElement('div');
+    card.className = 'about-card';
+    card.setAttribute('role', 'dialog');
+    card.setAttribute('aria-modal', 'true');
+    card.setAttribute('aria-labelledby', 'about-title');
+    card.tabIndex = -1;
+
+    var titleId = 'about-title';
+    card.innerHTML =
+      '<button class="about-close" type="button" aria-label="Close">×</button>' +
+      '<h2 id="' + titleId + '"></h2>' +
+      '<div class="about-body"></div>' +
+      '<div class="about-foot">' +
+        '<a class="about-board" href="/clocks/">all clocks</a>' +
+        '<a href="https://datapoems.io">data poems</a>' +
+        '<a href="https://lukesteuber.com">about me</a>' +
+      '</div>';
+    card.querySelector('h2').textContent = cfg.title || 'About this clock';
+    var bodyEl = card.querySelector('.about-body');
+    // cfg.pages (array of HTML strings) => a horizontal snap-scroll sequence with
+    // dots, so a long modal becomes a few swipeable pages. cfg.body => one column.
+    if (cfg.pages && cfg.pages.length) {
+      var phtml = '<div class="about-pages">';
+      for (var pi = 0; pi < cfg.pages.length; pi++) phtml += '<div class="about-page">' + cfg.pages[pi] + '</div>';
+      bodyEl.innerHTML = phtml + '</div><div class="about-dots"></div>';
+      var pagesEl = bodyEl.querySelector('.about-pages');
+      var dotsEl = bodyEl.querySelector('.about-dots');
+      cfg.pages.forEach(function (_, idx) {
+        var dot = document.createElement('button');
+        dot.type = 'button';
+        dot.className = 'about-dot' + (idx === 0 ? ' on' : '');
+        dot.setAttribute('aria-label', 'Page ' + (idx + 1));
+        dot.addEventListener('click', function () {
+          pagesEl.scrollTo({ left: idx * pagesEl.clientWidth, behavior: 'smooth' });
+        });
+        dotsEl.appendChild(dot);
+      });
+      pagesEl.addEventListener('scroll', function () {
+        var idx = Math.round(pagesEl.scrollLeft / Math.max(1, pagesEl.clientWidth));
+        for (var k = 0; k < dotsEl.children.length; k++) {
+          dotsEl.children[k].className = 'about-dot' + (k === idx ? ' on' : '');
+        }
+      }, { passive: true });
+    } else {
+      bodyEl.innerHTML = cfg.body;
+    }
+    // Optional per-clock board link, e.g. { label: 'Ciphers', href: '/clocks/numerals/' }.
+    var boardLink = card.querySelector('.about-board');
+    if (cfg.board && cfg.board.href) {
+      boardLink.setAttribute('href', cfg.board.href);
+      boardLink.textContent = cfg.board.label || 'back';
+    }
+
+    backdrop.appendChild(card);
+    document.body.appendChild(backdrop);
+
+    var closeBtn = card.querySelector('.about-close');
+    var lastFocus = null;
+
+    function focusables() {
+      return Array.prototype.slice.call(
+        card.querySelectorAll('a[href], button:not([disabled])')
+      );
+    }
+
+    function open() {
+      lastFocus = document.activeElement;
+      backdrop.hidden = false;
+      // force reflow so the opacity transition runs
+      void backdrop.offsetWidth;
+      backdrop.setAttribute('data-open', '');
+      card.focus();
+      document.addEventListener('keydown', onKey, true);
+    }
+
+    function close() {
+      backdrop.removeAttribute('data-open');
+      document.removeEventListener('keydown', onKey, true);
+      setTimeout(function () { backdrop.hidden = true; }, 200);
+      if (lastFocus && lastFocus.focus) lastFocus.focus();
+    }
+
+    function onKey(e) {
+      if (e.key === 'Escape') { e.preventDefault(); close(); return; }
+      if (e.key === 'Tab') {
+        var f = focusables();
+        if (!f.length) return;
+        var first = f[0], last = f[f.length - 1];
+        if (e.shiftKey && document.activeElement === first) {
+          e.preventDefault(); last.focus();
+        } else if (!e.shiftKey && document.activeElement === last) {
+          e.preventDefault(); first.focus();
+        }
+      }
+    }
+
+    backdrop.addEventListener('click', function (e) {
+      if (e.target === backdrop) close();
+    });
+    closeBtn.addEventListener('click', close);
+
+    // upgrade the "?" trigger to open the dialog (keep href as fallback).
+    // Relabel it: the original markup often labelled this control for its old
+    // job (a link to the gallery or my site), which is now misleading once it
+    // opens the explainer dialog. Name it for what it actually does.
+    trigger.setAttribute('role', 'button');
+    trigger.setAttribute('aria-haspopup', 'dialog');
+    trigger.setAttribute('aria-label', cfg.title ? 'About the ' + cfg.title + ' clock' : 'About this clock');
+    trigger.addEventListener('click', function (e) {
+      e.preventDefault();
+      open();
+    });
+  });
+})();
+</script>
+<!--/inlined:about-modal.js-->
+<script data-goatcounter="https://stats.dr.eamer.dev/count" async src="https://stats.dr.eamer.dev/count.js"></script>
+</body>
+</html>

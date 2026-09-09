@@ -1,0 +1,263 @@
+[
+  {
+    "id": 0,
+    "slug": "roman",
+    "name": "Roman",
+    "source": "https://datapoems.io/clocks/roman/",
+    "sourceSHA256": "997b2bd522249dfb1d6ed158b0412022749d1541eda5a0006137265f159c1135",
+    "layout": "rows",
+    "guide": "Read hours, minutes and optional seconds from top to bottom. Roman subtractive numerals. The midpoint marks zero."
+  },
+  {
+    "id": 1,
+    "slug": "greek-ionic",
+    "name": "Greek Ionic",
+    "source": "https://datapoems.io/clocks/greek-ionic/",
+    "sourceSHA256": "fc85180bbc2a746ba8339a1a5feaede1fbbedcec1275304dd8ff6e85072d1fc0",
+    "layout": "rows",
+    "guide": "Read hours, minutes and optional seconds from top to bottom. Tens and units read left to right, followed by the numeral tick. A ring marks zero."
+  },
+  {
+    "id": 2,
+    "slug": "glagolitic",
+    "name": "Glagolitic",
+    "source": "https://datapoems.io/clocks/glagolitic/",
+    "sourceSHA256": "7338f6d088b3f30ecd7007d80edcb8c4b4316134c2bcc978ac94a78a97aff103",
+    "layout": "rows",
+    "guide": "Read hours, minutes and optional seconds from top to bottom. Tens and units use Glagolitic letters. The source uses 0 for zero."
+  },
+  {
+    "id": 3,
+    "slug": "etruscan",
+    "name": "Etruscan",
+    "source": "https://datapoems.io/clocks/etruscan/",
+    "sourceSHA256": "53233d8d4493e7a3942822d9b0bb85f0b4e02d5110a7c2c89b8b4fcbff4c8871",
+    "layout": "rows",
+    "guide": "Read hours, minutes and optional seconds from top to bottom. Additive signs read right to left: one, five, ten and fifty. A ring marks zero."
+  },
+  {
+    "id": 4,
+    "slug": "aegean",
+    "name": "Aegean",
+    "source": "https://datapoems.io/clocks/aegean/",
+    "sourceSHA256": "f5f20fa7d94503f5040631668712e9ced817aa0b6abc8ed726b55e9519c21ab9",
+    "layout": "rows",
+    "guide": "Read hours, minutes and optional seconds from top to bottom. Horizontal bars count tens; vertical strokes count ones. An empty group is zero."
+  },
+  {
+    "id": 5,
+    "slug": "brahmi",
+    "name": "Brahmi",
+    "source": "https://datapoems.io/clocks/brahmi/",
+    "sourceSHA256": "9f7f5ada2c6337be87bd6c367533df21da4913bce07a82b3183ef31332d7a16d",
+    "layout": "rows",
+    "guide": "Read hours, minutes and optional seconds from top to bottom. Brahmi tens signs precede units signs. A ring marks zero."
+  },
+  {
+    "id": 6,
+    "slug": "geez",
+    "name": "Ge’ez",
+    "source": "https://datapoems.io/clocks/geez/",
+    "sourceSHA256": "f429e402aaaf99f5b4274395e9aec67f2128003ed5a5fae6d52752bbd35cd383",
+    "layout": "rows",
+    "guide": "Read hours, minutes and optional seconds from top to bottom. Ge’ez tens signs precede units signs. A ring marks zero."
+  },
+  {
+    "id": 7,
+    "slug": "hangul",
+    "name": "Hangul",
+    "source": "https://datapoems.io/clocks/hangul/",
+    "sourceSHA256": "889276f072806cdf4e8ffb4724eb89d17029a2340c0c7237dad55815b973c75b",
+    "layout": "rows",
+    "guide": "Read hours, minutes and optional seconds from top to bottom. Sino-Korean number words in Hangul, preserving the source’s numeric convention."
+  },
+  {
+    "id": 8,
+    "slug": "kaktovik",
+    "name": "Kaktovik",
+    "source": "https://datapoems.io/clocks/kaktovik/",
+    "sourceSHA256": "538881ca5b8674eb812a6519d0d79d47d071d2224b3ef5ba1a74a5c73aaf6d67",
+    "layout": "rows",
+    "guide": "Read hours, minutes and optional seconds from top to bottom. Two base-20 digits read left to right. The left digit counts twenties; the right counts ones."
+  },
+  {
+    "id": 9,
+    "slug": "mayan",
+    "name": "Maya",
+    "source": "https://datapoems.io/clocks/mayan/",
+    "sourceSHA256": "0311a1f53c1cffe0b2fb6c6a1c1e7b9d214ea87b8ad24bdc3b8537334712c8ba",
+    "layout": "columns",
+    "guide": "Read hours, minutes and optional seconds from left to right. Within each column, twenties sit above ones. Dots are one, bars five, and a shell is zero."
+  },
+  {
+    "id": 10,
+    "slug": "babylonian",
+    "name": "Babylonian",
+    "source": "https://datapoems.io/clocks/babylonian/",
+    "sourceSHA256": "ccde018d2c6041c43f49e6b86b299463369daa7f99b4abb5d54908e81f1abb28",
+    "layout": "rows",
+    "guide": "Read hours, minutes and optional seconds from top to bottom. Corner wedges count tens; upright wedges count ones. Paired slashes mark an empty place."
+  },
+  {
+    "id": 11,
+    "slug": "counting-rods",
+    "name": "Counting Rods",
+    "source": "https://datapoems.io/clocks/counting-rods/",
+    "sourceSHA256": "9ee6cb0a2c25a552fe3cc47e85b532ad0e27eb250056b63fdadc58bf5d37cd20",
+    "layout": "rows",
+    "guide": "Read hours, minutes and optional seconds from top to bottom. The tens digit uses horizontal rods; the units digit uses vertical rods. An open ring marks an empty place."
+  },
+  {
+    "id": 12,
+    "slug": "runic",
+    "name": "Runic Pentimal",
+    "source": "https://datapoems.io/clocks/runic/",
+    "sourceSHA256": "f73c49946e1c663424547860ad7275415465f17ac51419b6b59f4ef38644009c",
+    "layout": "rows",
+    "guide": "Read hours, minutes and optional seconds from top to bottom. Each pair has a tens stave and a units stave. Twigs count one to four; a flag is five. This follows the source’s modern clock adaptation."
+  },
+  {
+    "id": 13,
+    "slug": "cistercian-triple",
+    "name": "Cistercian",
+    "source": "https://datapoems.io/clocks/cistercian-triple/",
+    "sourceSHA256": "04de83780eaef82e554c85c49158028363e7d9b971ad6ad2e5c3542e8dba2c9f",
+    "layout": "columns",
+    "guide": "Read hours, minutes and optional seconds from left to right. Each stave is one number. Tens occupy the upper left; units the upper right. A bare stave means zero."
+  },
+  {
+    "id": 14,
+    "slug": "ogham",
+    "name": "Ogham",
+    "source": "https://datapoems.io/clocks/ogham/",
+    "sourceSHA256": "0f0da90beb26c35e9267af560b0ff0401a8cc9c6472686924d3b81fa1d185a3e",
+    "layout": "columns",
+    "guide": "Read hours, minutes and optional seconds from left to right. Each stem has a tens group above a units group. Side strokes mean one to five; crossing strokes mean six to nine. Rings mark zero. This is the source’s decimal adaptation, not a historical numeral convention."
+  },
+  {
+    "id": 15,
+    "slug": "tally",
+    "name": "Tally",
+    "source": "https://datapoems.io/clocks/tally/",
+    "sourceSHA256": "886580e47ffb521618db3c6ba2deff0b988883f2932728af1437b9618857b10d",
+    "layout": "rows",
+    "guide": "Read hours, minutes and optional seconds from top to bottom. Crossed groups count five, with remaining strokes counting ones. An empty group means zero. Dense values wrap after six crossed groups."
+  },
+  {
+    "id": 16,
+    "slug": "binary",
+    "name": "Binary",
+    "source": "https://datapoems.io/clocks/binary/",
+    "sourceSHA256": "cac99df7dd036d34d7c58671ea03f42e08cb10d9f877406f791afedecd230a8c",
+    "layout": "rows",
+    "guide": "Read hours, minutes and optional seconds from top to bottom. Six circles have weights 32, 16, 8, 4, 2 and 1 from left to right. Add the filled circles."
+  },
+  {
+    "id": 17,
+    "slug": "ternary",
+    "name": "Balanced Ternary",
+    "source": "https://datapoems.io/clocks/ternary/",
+    "sourceSHA256": "8247d49483f8ffd44cb203e4cc96de1b5cf55dafe5921231ed1a95ffe6294e44",
+    "layout": "rows",
+    "guide": "Read hours, minutes and optional seconds from top to bottom. Five places have weights 81, 27, 9, 3 and 1. Up triangles add; down triangles subtract; dashes mean zero."
+  },
+  {
+    "id": 18,
+    "slug": "negabinary",
+    "name": "Negabinary",
+    "source": "https://datapoems.io/clocks/negabinary/",
+    "sourceSHA256": "f5e9c5497f2be0ee81c2a23c260e71dc1e6d859807a4f9ca4b78fd7b561aea10",
+    "layout": "rows",
+    "guide": "Read hours, minutes and optional seconds from top to bottom. Seven places have weights 64, −32, 16, −8, 4, −2 and 1. Add the weights of filled circles."
+  },
+  {
+    "id": 19,
+    "slug": "bcd",
+    "name": "Binary-Coded Decimal",
+    "source": "https://datapoems.io/clocks/bcd/",
+    "sourceSHA256": "2b47d0f9b3e5199ced571f8e2c2fa5772d82cfe7a859e870c9c660e18cfe7aa8",
+    "layout": "rows",
+    "guide": "Read hours, minutes and optional seconds from top to bottom. Each decimal digit has four circles with weights 8, 4, 2 and 1. The tens digit comes first."
+  },
+  {
+    "id": 20,
+    "slug": "gray-code",
+    "name": "Gray Code",
+    "source": "https://datapoems.io/clocks/gray-code/",
+    "sourceSHA256": "ac9de847e14ce5bc98a0fb2307ae76a8dc6e8742a5662065b59876f5c6d87a20",
+    "layout": "rows",
+    "guide": "Read hours, minutes and optional seconds from top to bottom. Six circles show reflected binary Gray code. To decode, carry the running exclusive-or from left to right."
+  },
+  {
+    "id": 21,
+    "slug": "hex-clock",
+    "name": "Hexadecimal",
+    "source": "https://datapoems.io/clocks/hex-clock/",
+    "sourceSHA256": "fe13a5ba52f72d95e1534295746981ddf99d2cdb1bd7f6b4ea359e49eb352053",
+    "layout": "rows",
+    "guide": "Read hours, minutes and optional seconds from top to bottom. Each pair uses base sixteen: 0–9, then A–F for ten through fifteen."
+  },
+  {
+    "id": 22,
+    "slug": "factoradic",
+    "name": "Factoradic",
+    "source": "https://datapoems.io/clocks/factoradic/",
+    "sourceSHA256": "5258e9e4642d668462ad0d25b1ca4766a518d4dd84d5a988a52127c6ff67f7fa",
+    "layout": "rows",
+    "guide": "Read hours, minutes and optional seconds from top to bottom. Four columns have weights 24, 6, 2 and 1. Multiply each dot count by its column weight, then add."
+  },
+  {
+    "id": 23,
+    "slug": "brass",
+    "name": "Braille",
+    "source": "https://datapoems.io/clocks/brass/",
+    "sourceSHA256": "abf0851187143d62595912a279776fb4849cff34ffa3cca8c55e2ca8c50599da",
+    "layout": "rows",
+    "guide": "Read hours, minutes and optional seconds from top to bottom. Each group starts with the Braille number sign, followed by two decimal digits. This is visual Braille on a flat screen."
+  },
+  {
+    "id": 24,
+    "slug": "iching",
+    "name": "I Ching",
+    "source": "https://datapoems.io/clocks/iching/",
+    "sourceSHA256": "36e8bb7ee58db0fe29199b3f32d0ee63a9fa47b27b7a5b6d73fab47f0368f5af",
+    "layout": "rows",
+    "guide": "Read hours, minutes and optional seconds from top to bottom. Six lines encode the value in binary. The bottom line is worth one, then two, four, eight, sixteen and thirty-two. Solid adds; broken means zero."
+  },
+  {
+    "id": 25,
+    "slug": "aztec",
+    "name": "Aztec",
+    "source": "https://datapoems.io/clocks/aztec/",
+    "sourceSHA256": "bb18b62638a6566773687f1348c960a45e7c365c2ef5c48ef879f1e6a4639de3",
+    "layout": "rows",
+    "guide": "Read hours, minutes and optional seconds from top to bottom. Flags count twenties; dots count ones. An empty group is zero. Dots wrap in rows of five."
+  },
+  {
+    "id": 26,
+    "slug": "tengwar",
+    "name": "Tengwar",
+    "source": "https://datapoems.io/clocks/tengwar/",
+    "sourceSHA256": "9e03357693d2ee944a96e329f7b3a7babe7bb46e1bb67679ad85b93c599d2cb9",
+    "layout": "rows",
+    "guide": "Read hours, minutes and optional seconds from top to bottom. Two base-twelve Tengwar digits include distinct signs for ten and eleven. This follows the source’s left-to-right clock convention."
+  },
+  {
+    "id": 27,
+    "slug": "klingon",
+    "name": "Klingon",
+    "source": "https://datapoems.io/clocks/klingon/",
+    "sourceSHA256": "11fd92375cfd98a8b4ec2a8e3c2365c810d5cab9513b28a0456756812684d7c5",
+    "layout": "rows",
+    "guide": "Read hours, minutes and optional seconds from top to bottom. Two decimal digits use the source’s pIqaD numeral font."
+  },
+  {
+    "id": 28,
+    "slug": "yautja",
+    "name": "Yautja",
+    "source": "https://datapoems.io/clocks/yautja/",
+    "sourceSHA256": "76a0fddb2b11725f4c03315f80737c914fbb99e3c2036230c922ffe90f05ecbc",
+    "layout": "rows",
+    "guide": "Read hours, minutes and optional seconds from top to bottom. Two decimal digits use the source’s fictional tally-like signs. A dot marks zero; these are a clock adaptation."
+  }
+]

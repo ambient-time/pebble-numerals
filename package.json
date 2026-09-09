@@ -1,0 +1,189 @@
+{
+  "name": "numerals",
+  "author": "Luke Steuber",
+  "version": "0.1.0",
+  "private": true,
+  "keywords": [
+    "pebble-app"
+  ],
+  "dependencies": {},
+  "devDependencies": {
+    "@napi-rs/canvas": "0.1.80",
+    "acorn": "8.15.0"
+  },
+  "pebble": {
+    "displayName": "Numerals",
+    "companyName": "Luke Steuber",
+    "uuid": "648c1854-8609-481f-8065-190fbbacfa50",
+    "sdkVersion": "3",
+    "enableMultiJS": true,
+    "targetPlatforms": [
+      "basalt",
+      "diorite",
+      "emery",
+      "flint"
+    ],
+    "watchapp": {
+      "watchface": true
+    },
+    "capabilities": [
+      "configurable"
+    ],
+    "messageKeys": [
+      "SYSTEM",
+      "SECONDS",
+      "ACK_SYSTEM",
+      "ACK_SECONDS",
+      "REQUEST"
+    ],
+    "resources": {
+      "media": [
+        {
+          "type": "raw",
+          "name": "NUMERAL_0",
+          "file": "roman.bin"
+        },
+        {
+          "type": "raw",
+          "name": "NUMERAL_1",
+          "file": "greek-ionic.bin"
+        },
+        {
+          "type": "raw",
+          "name": "NUMERAL_2",
+          "file": "glagolitic.bin"
+        },
+        {
+          "type": "raw",
+          "name": "NUMERAL_3",
+          "file": "etruscan.bin"
+        },
+        {
+          "type": "raw",
+          "name": "NUMERAL_4",
+          "file": "aegean.bin"
+        },
+        {
+          "type": "raw",
+          "name": "NUMERAL_5",
+          "file": "brahmi.bin"
+        },
+        {
+          "type": "raw",
+          "name": "NUMERAL_6",
+          "file": "geez.bin"
+        },
+        {
+          "type": "raw",
+          "name": "NUMERAL_7",
+          "file": "hangul.bin"
+        },
+        {
+          "type": "raw",
+          "name": "NUMERAL_8",
+          "file": "kaktovik.bin"
+        },
+        {
+          "type": "raw",
+          "name": "NUMERAL_9",
+          "file": "mayan.bin"
+        },
+        {
+          "type": "raw",
+          "name": "NUMERAL_10",
+          "file": "babylonian.bin"
+        },
+        {
+          "type": "raw",
+          "name": "NUMERAL_11",
+          "file": "counting-rods.bin"
+        },
+        {
+          "type": "raw",
+          "name": "NUMERAL_12",
+          "file": "runic.bin"
+        },
+        {
+          "type": "raw",
+          "name": "NUMERAL_13",
+          "file": "cistercian-triple.bin"
+        },
+        {
+          "type": "raw",
+          "name": "NUMERAL_14",
+          "file": "ogham.bin"
+        },
+        {
+          "type": "raw",
+          "name": "NUMERAL_15",
+          "file": "tally.bin"
+        },
+        {
+          "type": "raw",
+          "name": "NUMERAL_16",
+          "file": "binary.bin"
+        },
+        {
+          "type": "raw",
+          "name": "NUMERAL_17",
+          "file": "ternary.bin"
+        },
+        {
+          "type": "raw",
+          "name": "NUMERAL_18",
+          "file": "negabinary.bin"
+        },
+        {
+          "type": "raw",
+          "name": "NUMERAL_19",
+          "file": "bcd.bin"
+        },
+        {
+          "type": "raw",
+          "name": "NUMERAL_20",
+          "file": "gray-code.bin"
+        },
+        {
+          "type": "raw",
+          "name": "NUMERAL_21",
+          "file": "hex-clock.bin"
+        },
+        {
+          "type": "raw",
+          "name": "NUMERAL_22",
+          "file": "factoradic.bin"
+        },
+        {
+          "type": "raw",
+          "name": "NUMERAL_23",
+          "file": "brass.bin"
+        },
+        {
+          "type": "raw",
+          "name": "NUMERAL_24",
+          "file": "iching.bin"
+        },
+        {
+          "type": "raw",
+          "name": "NUMERAL_25",
+          "file": "aztec.bin"
+        },
+        {
+          "type": "raw",
+          "name": "NUMERAL_26",
+          "file": "tengwar.bin"
+        },
+        {
+          "type": "raw",
+          "name": "NUMERAL_27",
+          "file": "klingon.bin"
+        },
+        {
+          "type": "raw",
+          "name": "NUMERAL_28",
+          "file": "yautja.bin"
+        }
+      ]
+    }
+  }
+}

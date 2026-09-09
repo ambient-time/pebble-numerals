@@ -1,0 +1,606 @@
+<!doctype html>
+<!--
+  Counting Rods: Local time written in ancient Chinese counting rods (筹算): the hour, minute and second each as two rod numerals, the t…
+  A clock from Luke Steuber's gallery: https://datapoems.io/clocks/counting-rods/
+  Author: Luke Steuber · lukesteuber.com · @lukesteuber.com (Bluesky)
+  Copyright 2026 Luke Steuber. MIT License. Reuse freely, keep this credit.
+  Libraries loaded from a CDN (if any) keep their own licenses.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Counting Rods</title>
+<meta name="description" content="Local time written in ancient Chinese counting rods (筹算): the hour, minute and second each as two rod numerals, the tens digit in horizontal form and the units digit in vertical form, alternating to stay unambiguous. The exact time is shown and announced.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Counting Rods">
+<meta property="og:description" content="Local time in ancient Chinese counting rods (筹算): tens digits drawn in horizontal form, units in vertical form, alternating place by place. The exact time is shown.">
+<meta property="og:url" content="https://datapoems.io/clocks/counting-rods/">
+<meta property="og:image" content="https://datapoems.io/clocks/counting-rods/social-card.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Counting Rods">
+<meta name="twitter:description" content="Local time in ancient Chinese counting rods (筹算): tens digits drawn in horizontal form, units in vertical form, alternating place by place.">
+<meta name="twitter:image" content="https://datapoems.io/clocks/counting-rods/social-card.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  :root { --accent: #d24c5a; --bg: #20160f; --bg2: #2c1f15; --ink: rgba(238,224,206,0.86); }
+  html, body { width: 100%; height: 100%; background: #20160f; overflow: hidden; font-family: 'Atkinson Hyperlegible', ui-sans-serif, system-ui, -apple-system, sans-serif; }
+  #scene {
+    position: fixed; inset: 0; width: 100%; height: 100%; display: block;
+  }
+  .legend {
+    position: fixed; left: 50%; bottom: max(34px, calc(env(safe-area-inset-bottom) + 22px));
+    transform: translateX(-50%); z-index: 5; text-align: center;
+    pointer-events: none; max-width: calc(100% - 28px);
+    color: rgba(125,34,54,0.6); font-size: 11px; letter-spacing: 0.14em;
+    text-transform: uppercase; line-height: 1.5;
+    opacity: 0; transition: opacity 0.6s ease;
+  }
+  .legend.show { opacity: 1; }
+  .help {
+    position: fixed; right: 16px; top: 14px; z-index: 5;
+    width: 38px; height: 38px; display: flex; align-items: center; justify-content: center;
+    border-radius: 50%; border: 1px solid rgba(125,34,54,.35); color: rgba(60,40,40,.85);
+    text-decoration: none; font-weight: 600; font-size: 1.2rem; background: rgba(236,228,210,.4);
+    backdrop-filter: blur(4px); transition: background .25s, border-color .25s, transform .25s;
+  }
+  .help:hover, .help:focus-visible { background: rgba(125,34,54,.12); border-color: #7d2236; transform: scale(1.06); outline: none; }
+  .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+</style>
+</head>
+<body>
+  <canvas id="scene" role="img"
+    aria-label="The current local 24-hour time written in ancient Chinese counting rods. The hour, the minute and the second stack top to bottom in a portrait column, hours on top, minutes in the middle, seconds at the bottom, following the top-to-bottom flow of traditional Chinese script. Each is shown as two rod numerals: the tens digit in horizontal form and the units digit in vertical form, the two forms alternating place by place so adjacent digits stay unambiguous. A zero is an empty column. The exact time is shown beside each group and announced once a minute."></canvas>
+  <a class="help" href="https://lukesteuber.com" aria-label="Luke Steuber's website">?</a>
+  <div class="sr-only" id="sr" aria-live="polite">Loading clock.</div>
+
+<script>
+(function () {
+  "use strict";
+
+  var canvas = document.getElementById('scene');
+  var ctx = canvas.getContext('2d');
+  var sr = document.getElementById('sr');
+
+  var CYAN = '#d24c5a';
+  var AMBER = '#f5b441';
+
+  // --------------------------------------------------------------------------
+  // COUNTING ROD ENCODING (筹算)
+  // A digit 1..9 is built from little sticks in one of two alternating forms.
+  //
+  // VERTICAL form (units, hundreds, ten-thousands):
+  //   1-5 = that many VERTICAL rods side by side.
+  //   6-9 = ONE HORIZONTAL rod on top, with (d-5) VERTICAL rods hanging below.
+  //
+  // HORIZONTAL form (tens, thousands): the vertical form rotated a quarter turn.
+  //   1-5 = that many HORIZONTAL rods stacked.
+  //   6-9 = ONE VERTICAL rod with (d-5) HORIZONTAL rods beside it.
+  //
+  // ZERO = an empty cell (a faint dotted placeholder keeps the column visible).
+  //
+  // We model every rod as a unit-length stick at a position inside a normalised
+  // [-1,1] x [-1,1] cell, with an orientation 'v' or 'h'. drawDigit() consumes
+  // that list. The horizontal form is literally the vertical form's stick list
+  // with x/y swapped and each rod's orientation flipped, so the two forms are
+  // guaranteed to be exact quarter-turn rotations of one another.
+  // --------------------------------------------------------------------------
+
+  // VERTICAL form: list of rods as {x, y, o}. x is the column offset, y the row
+  // offset (y grows downward), o the orientation. Rods are spaced on a unit
+  // grid; drawDigit scales the whole list to fit the cell.
+  function verticalRods(d) {
+    var rods = [];
+    if (d <= 0) return rods;
+    if (d <= 5) {
+      // d vertical rods side by side, centred on x = 0
+      var start = -(d - 1) / 2;
+      for (var i = 0; i < d; i++) rods.push({ x: start + i, y: 0, o: 'v' });
+    } else {
+      // one horizontal rod on top, (d-5) vertical rods hanging below it
+      var lower = d - 5;
+      // The unit rods sit on the SAME row as the 1..5 rods (y = 0) so the row
+      // never moves when the value crosses 5; the "five" bar is lifted clear to
+      // the top of the cell above them, so a 6 reads as bar-on-top without the
+      // whole glyph dropping.
+      rods.push({ x: 0, y: -1.7, o: 'h' });          // the "five" bar on top
+      var s2 = -(lower - 1) / 2;
+      for (var j = 0; j < lower; j++) rods.push({ x: s2 + j, y: 0, o: 'v' });
+    }
+    return rods;
+  }
+
+  // HORIZONTAL form = vertical form rotated 90 degrees: swap x<->y and flip each
+  // rod's orientation. This is the defining alternation between adjacent places.
+  function horizontalRods(d) {
+    return verticalRods(d).map(function (r) {
+      return { x: r.y, y: r.x, o: r.o === 'v' ? 'h' : 'v' };
+    });
+  }
+
+  // --------------------------------------------------------------------------
+  // DRAW ONE ROD
+  // A single rounded phosphor stick of length `len`, centred at (cx,cy), in
+  // orientation o ('v' = vertical, 'h' = horizontal).
+  // --------------------------------------------------------------------------
+  function drawRod(cx, cy, len, thickness, o) {
+    var half = len / 2;
+    ctx.beginPath();
+    if (o === 'v') { ctx.moveTo(cx, cy - half); ctx.lineTo(cx, cy + half); }
+    else           { ctx.moveTo(cx - half, cy); ctx.lineTo(cx + half, cy); }
+    ctx.lineWidth = thickness;
+    ctx.lineCap = 'round';
+    ctx.strokeStyle = CYAN;
+    ctx.shadowColor = 'rgba(125,34,54,0.6)';
+    ctx.shadowBlur = Math.max(6, thickness * 1.2);
+    ctx.stroke();
+  }
+
+  // draw a faint dotted placeholder for an empty (zero) cell
+  function drawZero(cx, cy, r) {
+    ctx.save();
+    ctx.setLineDash([2, r * 0.16]);
+    ctx.lineWidth = Math.max(1.5, r * 0.04);
+    ctx.lineCap = 'round';
+    ctx.strokeStyle = 'rgba(125,34,54,0.18)';
+    ctx.beginPath();
+    ctx.arc(cx, cy, r * 0.5, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  // --------------------------------------------------------------------------
+  // DRAW ONE DIGIT into a cell of half-size `cell` centred at (cx, cy).
+  // `form` is 'v' (vertical/units) or 'h' (horizontal/tens).
+  // --------------------------------------------------------------------------
+  function drawDigit(cx, cy, digit, cell, form) {
+    if (digit === 0) { drawZero(cx, cy, cell); return; }
+    var rods = (form === 'h') ? horizontalRods(digit) : verticalRods(digit);
+
+    // grid step: distance between neighbouring rods, in cell units.
+    var step = cell * 0.30;
+    var rodLen = cell * 0.92;            // a stick spans most of the cell
+    var thickness = Math.max(2.5, cell * 0.085);
+
+    ctx.save();
+    for (var i = 0; i < rods.length; i++) {
+      var r = rods[i];
+      drawRod(cx + r.x * step, cy + r.y * step, rodLen, thickness, r.o);
+    }
+    ctx.restore();
+  }
+
+  // --------------------------------------------------------------------------
+  // CANVAS SIZING
+  // --------------------------------------------------------------------------
+  var DPR = 1, W = 0, H = 0;
+  function resize() {
+    DPR = Math.min(window.devicePixelRatio || 1, 2);
+    var r = canvas.getBoundingClientRect();
+    W = Math.max(1, Math.round(r.width));
+    H = Math.max(1, Math.round(r.height));
+    canvas.width = Math.round(W * DPR);
+    canvas.height = Math.round(H * DPR);
+    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  }
+  window.addEventListener('resize', resize);
+  window.addEventListener('orientationchange', function () { requestAnimationFrame(resize); });
+
+  // --------------------------------------------------------------------------
+  // RENDER
+  // --------------------------------------------------------------------------
+  function pad2(n) { return n < 10 ? '0' + n : '' + n; }
+  var lastSR = -1;
+
+  function tick() {
+    var now = new Date();
+    var h = now.getHours();
+    var m = now.getMinutes();
+    var s = now.getSeconds();
+    var vals = [h, m, s];
+
+    ctx.clearRect(0, 0, W, H);
+
+    // Traditional Chinese script flows top to bottom, so the three groups stack
+    // into a portrait column: hours on top, minutes in the middle, seconds at the
+    // bottom. Each group keeps its internal structure (tens cell beside units
+    // cell, horizontal form alternating with vertical). Size the cells mainly
+    // from the available height divided among the three stacked rows so the whole
+    // column, including the decoded labels, fits with margins.
+    var standalone = (window.self === window.top);
+
+    // Counting-rod digits keep their tens-horizontal / units-vertical form; only
+    // the H/M/S group layout adapts to the screen.
+    if (H > W * 1.05) {
+    // Reserve a taller footer band (the faded caption lives ~56px up) so the
+    // bottom group's decoded label never collides with it.
+    var footer = standalone ? 96 : 40;
+    var availH = Math.max(160, H - footer);
+    var availW = Math.max(120, W - 36);
+
+    // Each row's vertical extent, in cell half-sizes: rods reach ~cell*0.9 above
+    // and below centre (the "five" bar lifts a bit higher); when standalone, a
+    // decoded label sits tagGap (1.7) + its own height below. Allow for the gaps
+    // between the three rows (rowGapRatio) and a tail margin.
+    var tagH = standalone ? 1.7 + 0.7 : 0;     // tag gap + ~half tag block, in cells
+    var rowSpan = (1.9 + tagH);                // one row, in cell half-sizes
+    var rowGapRatio = 1.6;                      // gap between groups, in cell half-sizes
+    var cellFromH = availH / (3 * rowSpan + 2 * rowGapRatio);
+
+    // Width constraint: a group is two cells, tens beside units (digitGap = 2.0
+    // cells centre-to-centre) plus the outer cell radii (~0.92 each side).
+    var groupSpanCells = 2.0 + 2 * 0.92;
+    var cellFromW = availW / groupSpanCells;
+
+    var cell = Math.min(cellFromH, cellFromW);
+    var digitGap = cell * 2.0;           // tens cell to units cell within a group
+    var tagPx = Math.max(11, cell * 0.44);
+    var tagGap = cell * 1.7;
+    var rowGap = cell * rowGapRatio;
+
+    // three rows, each of height cell*rowSpan, plus two row gaps; centre the
+    // whole column within the available band (above the reserved footer).
+    var rowH = cell * rowSpan;
+    var totalH = 3 * rowH + 2 * rowGap;
+    var bandTop = (H - footer - totalH) / 2;
+    var startY = Math.max(8, bandTop);
+
+    // horizontal centre for the two-cell group: tens left, units right.
+    var groupCx = W / 2;
+    var tensX = groupCx - digitGap / 2;   // tens cell (left)
+    var unitsX = groupCx + digitGap / 2;  // units cell (right)
+
+    for (var c = 0; c < 3; c++) {
+      // glyph centre for this row: lift by the tag block so rods + decimal
+      // balance within the row's allotted height.
+      var rowTop = startY + c * (rowH + rowGap);
+      var cyMid = rowTop + (rowH - (tagGap + tagPx)) / 2 + cell * 0.95;
+      var tens = Math.floor(vals[c] / 10);
+      var units = vals[c] % 10;
+
+      drawDigit(tensX, cyMid, tens, cell, 'h');   // tens -> horizontal form
+      drawDigit(unitsX, cyMid, units, cell, 'v'); // units -> vertical form
+
+      // decoded two-digit value beneath the group (hours / minutes / seconds)
+      // standalone only, not in gallery embeds
+      if (standalone) {
+        ctx.save();
+        ctx.fillStyle = 'rgba(232,212,182,0.7)';
+        ctx.font = '600 ' + Math.round(tagPx) + 'px "JetBrains Mono", monospace';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(pad2(vals[c]), groupCx, cyMid + tagGap);
+        ctx.restore();
+      }
+    }
+    } else {
+      // LANDSCAPE (e.g. Apple TV): three groups across one row, H | M | S, each a
+      // tens cell (horizontal rods) beside a units cell (vertical rods).
+      var colW = W / 3;
+      var groupSpanCells = 2.0 + 2 * 0.92;
+      var cellL = Math.min((colW * 0.82) / groupSpanCells, (H * 0.5) / 1.9, 92);
+      var digitGapL = cellL * 2.0;
+      var tagPxL = Math.max(11, cellL * 0.44);
+      var tagGapL = cellL * 1.6;
+      var cyMidL = H / 2 - (standalone ? cellL * 0.5 : 0);
+      for (var k = 0; k < 3; k++) {
+        var gcx = colW * (k + 0.5);
+        drawDigit(gcx - digitGapL / 2, cyMidL, Math.floor(vals[k] / 10), cellL, 'h');
+        drawDigit(gcx + digitGapL / 2, cyMidL, vals[k] % 10, cellL, 'v');
+        if (standalone) {
+          ctx.save();
+          ctx.fillStyle = 'rgba(232,212,182,0.7)';
+          ctx.font = '600 ' + Math.round(tagPxL) + 'px "JetBrains Mono", monospace';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(['H', 'M', 'S'][k] + ' ' + pad2(vals[k]), gcx, cyMidL + tagGapL);
+          ctx.restore();
+        }
+      }
+    }
+
+    if (m !== lastSR) {
+      lastSR = m;
+      sr.textContent = pad2(h) + ':' + pad2(m) + ' local time, in Chinese counting rods.';
+    }
+  }
+
+  var rafId = null;
+  function loop() { tick(); rafId = requestAnimationFrame(loop); }
+  function start() {
+    if (rafId) cancelAnimationFrame(rafId);
+    rafId = requestAnimationFrame(loop);
+  }
+  document.addEventListener('visibilitychange', function () {
+    if (document.hidden) { if (rafId) { cancelAnimationFrame(rafId); rafId = null; } }
+    else if (!rafId) { rafId = requestAnimationFrame(loop); }
+  });
+
+  // brief read-it caption: shown on load, again on tap or key, fading after a pause
+  var legend = document.getElementById('legend');
+  var legendTimer = null;
+  function flashLegend() {
+    if (!legend) return;
+    legend.classList.add('show');
+    if (legendTimer) clearTimeout(legendTimer);
+    legendTimer = setTimeout(function () { legend.classList.remove('show'); }, 5000);
+  }
+  document.addEventListener('pointerup', function (e) {
+    if (e.target.closest && e.target.closest('a')) return;
+    flashLegend();
+  });
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); flashLegend(); }
+  });
+  if (window.self === window.top) flashLegend();  // standalone only, not in gallery embeds
+
+  resize();
+  start();
+})();
+</script>
+<script>window.aboutClock = {
+  title: 'Counting Rods',
+  board: { label: 'Ciphers', href: '/clocks/numerals/' },
+  body: '<p>Counting rods are little sticks arranged as digits on a counting board, and each place value rotates to stay readable. '
+      + 'In this clock the tens digit lies in the horizontal form and the ones digit stands in the vertical form, with an empty spot for zero. Hours, minutes, and seconds each show as a two digit pair, with the plain value nearby.</p>'
+      + '<p>The rods turn ninety degrees each place so the digits do not blur together, which is more careful interface design than most apps manage today.</p>'
+      + '<p class="about-map">Source: <a href="https://en.wikipedia.org/wiki/Counting_rods" target="_blank" rel="noopener">Wikipedia</a>.</p>'
+};</script>
+<!--inlined:about-modal.js-->
+<script>
+/* about-modal.js — a drop-in "?" explainer for a clock.
+ *
+ * Usage: set the config, then load this file (no build step, no other deps):
+ *   <script>window.aboutClock = { title: 'Maya', body: '<p>…</p>' };<\/script>
+ *   <script src="/clocks/shared/about-modal.js"><\/script>
+ *
+ * If the page already has a `.help` "?" control it upgrades that in place:
+ * clicking it opens an accessible dialog explaining the clock instead of
+ * navigating away (the original href stays as a no-JS fallback). If there is
+ * NO `.help` control, it synthesizes its own house-styled "?" button (top
+ * right) so any clock becomes self-documenting by just including the script.
+ * The synthesized button only appears in the standalone full-page view, never
+ * inside a gallery preview iframe (window.self === window.top), matching the
+ * GoatCounter gate used elsewhere.
+ *
+ * Theming: the dialog reads the page's --accent / --bg / --ink custom
+ * properties when present, falling back to the house phosphor palette.
+ */
+(function () {
+  'use strict';
+
+  var cfg = window.aboutClock;
+  if (!cfg || (!cfg.body && !(cfg.pages && cfg.pages.length))) return;
+
+  function onReady(fn) {
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', fn);
+    } else {
+      fn();
+    }
+  }
+
+  onReady(function () {
+    var trigger = document.querySelector('.help:not(.dice)') || document.querySelector('.help');
+    if (!trigger) {
+      // No "?" control on the page: synthesize one, but only in the standalone
+      // full-page view — it would be dead weight inside a gallery preview iframe.
+      if (window.self !== window.top) return;
+      var hs = document.createElement('style');
+      hs.textContent =
+        ".about-help-auto{position:fixed;top:max(.6rem,env(safe-area-inset-top));" +
+        "right:max(.6rem,env(safe-area-inset-right));z-index:30;display:flex;" +
+        "align-items:center;justify-content:center;min-width:44px;min-height:44px;" +
+        "background:none;border:none;cursor:pointer;color:var(--accent,#5cd9ff);" +
+        "opacity:.55;font:700 19px/1 'Atkinson Hyperlegible',ui-sans-serif,sans-serif;" +
+        "border-radius:6px;transition:opacity .25s ease;}" +
+        ".about-help-auto:hover,.about-help-auto:focus-visible{opacity:1;}" +
+        ".about-help-auto:focus-visible{outline:2px solid currentColor;outline-offset:3px;}";
+      document.head.appendChild(hs);
+      trigger = document.createElement('button');
+      trigger.type = 'button';
+      trigger.className = 'about-help-auto';
+      trigger.setAttribute('aria-label', 'About this clock');
+      trigger.textContent = '?';
+      document.body.appendChild(trigger);
+    }
+
+    // load the reading font (Atkinson Hyperlegible, as used across the other
+    // projects) so explanatory prose never falls back to the console mono.
+    if (!document.querySelector('link[data-about-font]')) {
+      var fl = document.createElement('link');
+      fl.rel = 'stylesheet';
+      fl.setAttribute('data-about-font', '');
+      fl.href = 'https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&display=swap';
+      document.head.appendChild(fl);
+    }
+
+    // ---- styles (injected once) ----------------------------------------
+    var css =
+      '.about-backdrop[hidden]{display:none;}' +
+      '.about-backdrop{position:fixed;inset:0;z-index:1000;display:flex;' +
+      'align-items:center;justify-content:center;padding:24px;' +
+      'background:rgba(2,5,11,0.40);backdrop-filter:blur(8px);' +
+      'opacity:0;transition:opacity .34s ease;}' +
+      '.about-backdrop[data-open]{opacity:1;}' +
+      '.about-card{position:relative;max-width:30rem;width:100%;' +
+      'max-height:calc(100vh - 48px);overflow:auto;' +
+      'background:var(--bg2, var(--bg, #060a14));' +
+      'border:1px solid rgba(150,154,168,0.18);border-radius:12px;' +
+      'box-shadow:0 18px 60px rgba(0,0,0,0.5);' +
+      'padding:26px 26px 20px;' +
+      "font-family:'Atkinson Hyperlegible', ui-sans-serif, system-ui, -apple-system, sans-serif;" +
+      'color:var(--ink, rgba(255,255,255,0.82));' +
+      'transform:translateY(10px);transition:transform .34s ease;}' +
+      '.about-backdrop[data-open] .about-card{transform:none;}' +
+      '.about-card h2{margin:0 0 12px;font-size:13px;font-weight:700;' +
+      'letter-spacing:0.34em;text-transform:uppercase;' +
+      'color:var(--accent, #5cd9ff);padding-right:32px;}' +
+      '.about-card p{margin:0 0 11px;font-size:13px;line-height:1.62;' +
+      'letter-spacing:0.01em;color:var(--ink, rgba(255,255,255,0.82));}' +
+      '.about-body a{color:var(--accent, #5cd9ff);text-decoration:underline;' +
+      'text-decoration-thickness:1px;text-underline-offset:2px;font-weight:600;' +
+      'border-radius:2px;transition:opacity .2s ease;}' +
+      '.about-body a:hover,.about-body a:focus-visible{text-decoration-thickness:2px;opacity:0.82;}' +
+      '.about-pages{display:flex;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;' +
+      '-webkit-overflow-scrolling:touch;scrollbar-width:none;margin:0 -26px;}' +
+      '.about-pages::-webkit-scrollbar{display:none;}' +
+      '.about-page{flex:0 0 100%;scroll-snap-align:center;padding:0 26px;box-sizing:border-box;}' +
+      '.about-page>:first-child{margin-top:0;}' +
+      '.about-dots{display:flex;justify-content:center;gap:9px;margin-top:18px;}' +
+      '.about-dot{width:7px;height:7px;border-radius:50%;border:none;padding:0;cursor:pointer;' +
+      'background:rgba(150,154,168,0.3);transition:background .2s, transform .2s;}' +
+      '.about-dot.on{background:var(--accent, #5cd9ff);transform:scale(1.25);}' +
+      '.about-card .about-map{margin:14px 0 4px;padding-top:13px;' +
+      'border-top:1px solid rgba(128,128,128,0.22);font-size:12px;' +
+      'line-height:1.7;color:var(--dim, rgba(255,255,255,0.52));}' +
+      '.about-card .about-map b{color:var(--accent, #5cd9ff);font-weight:600;}' +
+      '.about-foot{display:flex;justify-content:space-between;align-items:center;' +
+      'margin-top:18px;gap:10px 16px;flex-wrap:wrap;}' +
+      '.about-foot a{color:var(--accent, #5cd9ff);text-decoration:none;' +
+      'font-size:11px;letter-spacing:0.12em;text-transform:uppercase;}' +
+      '.about-foot a.about-board::before{content:"\\2039\\00a0";}' +
+      '.about-foot a:hover,.about-foot a:focus-visible{text-decoration:underline;}' +
+      '.about-close{position:absolute;top:14px;right:14px;width:32px;height:32px;' +
+      'display:flex;align-items:center;justify-content:center;cursor:pointer;' +
+      'background:none;border:none;color:var(--dim, rgba(255,255,255,0.55));' +
+      "font:700 22px/1 'Atkinson Hyperlegible', ui-sans-serif, sans-serif;border-radius:4px;}" +
+      '.about-close:hover,.about-close:focus-visible{color:var(--accent, #5cd9ff);' +
+      'outline:2px solid var(--accent, #5cd9ff);outline-offset:1px;}';
+    var style = document.createElement('style');
+    style.textContent = css;
+    document.head.appendChild(style);
+
+    // ---- dialog DOM -----------------------------------------------------
+    var backdrop = document.createElement('div');
+    backdrop.className = 'about-backdrop';
+    backdrop.hidden = true;
+
+    var card = document.createElement('div');
+    card.className = 'about-card';
+    card.setAttribute('role', 'dialog');
+    card.setAttribute('aria-modal', 'true');
+    card.setAttribute('aria-labelledby', 'about-title');
+    card.tabIndex = -1;
+
+    var titleId = 'about-title';
+    card.innerHTML =
+      '<button class="about-close" type="button" aria-label="Close">×</button>' +
+      '<h2 id="' + titleId + '"></h2>' +
+      '<div class="about-body"></div>' +
+      '<div class="about-foot">' +
+        '<a class="about-board" href="/clocks/">all clocks</a>' +
+        '<a href="https://datapoems.io">data poems</a>' +
+        '<a href="https://lukesteuber.com">about me</a>' +
+      '</div>';
+    card.querySelector('h2').textContent = cfg.title || 'About this clock';
+    var bodyEl = card.querySelector('.about-body');
+    // cfg.pages (array of HTML strings) => a horizontal snap-scroll sequence with
+    // dots, so a long modal becomes a few swipeable pages. cfg.body => one column.
+    if (cfg.pages && cfg.pages.length) {
+      var phtml = '<div class="about-pages">';
+      for (var pi = 0; pi < cfg.pages.length; pi++) phtml += '<div class="about-page">' + cfg.pages[pi] + '</div>';
+      bodyEl.innerHTML = phtml + '</div><div class="about-dots"></div>';
+      var pagesEl = bodyEl.querySelector('.about-pages');
+      var dotsEl = bodyEl.querySelector('.about-dots');
+      cfg.pages.forEach(function (_, idx) {
+        var dot = document.createElement('button');
+        dot.type = 'button';
+        dot.className = 'about-dot' + (idx === 0 ? ' on' : '');
+        dot.setAttribute('aria-label', 'Page ' + (idx + 1));
+        dot.addEventListener('click', function () {
+          pagesEl.scrollTo({ left: idx * pagesEl.clientWidth, behavior: 'smooth' });
+        });
+        dotsEl.appendChild(dot);
+      });
+      pagesEl.addEventListener('scroll', function () {
+        var idx = Math.round(pagesEl.scrollLeft / Math.max(1, pagesEl.clientWidth));
+        for (var k = 0; k < dotsEl.children.length; k++) {
+          dotsEl.children[k].className = 'about-dot' + (k === idx ? ' on' : '');
+        }
+      }, { passive: true });
+    } else {
+      bodyEl.innerHTML = cfg.body;
+    }
+    // Optional per-clock board link, e.g. { label: 'Ciphers', href: '/clocks/numerals/' }.
+    var boardLink = card.querySelector('.about-board');
+    if (cfg.board && cfg.board.href) {
+      boardLink.setAttribute('href', cfg.board.href);
+      boardLink.textContent = cfg.board.label || 'back';
+    }
+
+    backdrop.appendChild(card);
+    document.body.appendChild(backdrop);
+
+    var closeBtn = card.querySelector('.about-close');
+    var lastFocus = null;
+
+    function focusables() {
+      return Array.prototype.slice.call(
+        card.querySelectorAll('a[href], button:not([disabled])')
+      );
+    }
+
+    function open() {
+      lastFocus = document.activeElement;
+      backdrop.hidden = false;
+      // force reflow so the opacity transition runs
+      void backdrop.offsetWidth;
+      backdrop.setAttribute('data-open', '');
+      card.focus();
+      document.addEventListener('keydown', onKey, true);
+    }
+
+    function close() {
+      backdrop.removeAttribute('data-open');
+      document.removeEventListener('keydown', onKey, true);
+      setTimeout(function () { backdrop.hidden = true; }, 200);
+      if (lastFocus && lastFocus.focus) lastFocus.focus();
+    }
+
+    function onKey(e) {
+      if (e.key === 'Escape') { e.preventDefault(); close(); return; }
+      if (e.key === 'Tab') {
+        var f = focusables();
+        if (!f.length) return;
+        var first = f[0], last = f[f.length - 1];
+        if (e.shiftKey && document.activeElement === first) {
+          e.preventDefault(); last.focus();
+        } else if (!e.shiftKey && document.activeElement === last) {
+          e.preventDefault(); first.focus();
+        }
+      }
+    }
+
+    backdrop.addEventListener('click', function (e) {
+      if (e.target === backdrop) close();
+    });
+    closeBtn.addEventListener('click', close);
+
+    // upgrade the "?" trigger to open the dialog (keep href as fallback).
+    // Relabel it: the original markup often labelled this control for its old
+    // job (a link to the gallery or my site), which is now misleading once it
+    // opens the explainer dialog. Name it for what it actually does.
+    trigger.setAttribute('role', 'button');
+    trigger.setAttribute('aria-haspopup', 'dialog');
+    trigger.setAttribute('aria-label', cfg.title ? 'About the ' + cfg.title + ' clock' : 'About this clock');
+    trigger.addEventListener('click', function (e) {
+      e.preventDefault();
+      open();
+    });
+  });
+})();
+</script>
+<!--/inlined:about-modal.js-->
+<script>/* only count real visits, not gallery previews in an iframe */
+if (window.self === window.top) {
+  var g = document.createElement("script"); g.async = true;
+  g.setAttribute("data-goatcounter", "https://stats.dr.eamer.dev/count");
+  g.src = "https://stats.dr.eamer.dev/count.js";
+  document.body.appendChild(g);
+}</script>
+</body>
+</html>

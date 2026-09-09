@@ -1,0 +1,631 @@
+<!doctype html>
+<!--
+  Cistercian: Three glyphs: Local 24-hour time written as three separate medieval Cistercian numerals: hours, minutes, and seconds, each its own…
+  A clock from Luke Steuber's gallery: https://datapoems.io/clocks/cistercian-triple/
+  Author: Luke Steuber · lukesteuber.com · @lukesteuber.com (Bluesky)
+  Copyright 2026 Luke Steuber. MIT License. Reuse freely, keep this credit.
+  Libraries loaded from a CDN (if any) keep their own licenses.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Cistercian: Three glyphs</title>
+<meta name="description" content="Local 24-hour time written as three separate medieval Cistercian numerals: hours, minutes, and seconds, each its own glyph. The exact time is shown and announced.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Cistercian: Three glyphs">
+<meta property="og:description" content="Local 24-hour time as three separate medieval Cistercian glyphs: hours, minutes, and seconds.">
+<meta property="og:url" content="https://datapoems.io/clocks/cistercian-triple/">
+<meta property="og:image" content="https://datapoems.io/clocks/cistercian-triple/social-card.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Cistercian: Three glyphs">
+<meta name="twitter:description" content="Local 24-hour time as three separate medieval Cistercian glyphs: hours, minutes, and seconds.">
+<meta name="twitter:image" content="https://datapoems.io/clocks/cistercian-triple/social-card.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  :root { --accent: #54f08a; --bg: #04120a; --bg2: #081c10; --ink: rgba(220,250,230,0.86); }
+  html, body { width: 100%; height: 100%; background: #04120a; overflow: hidden; font-family: 'Atkinson Hyperlegible', ui-sans-serif, system-ui, -apple-system, sans-serif; }
+  #scene {
+    position: fixed; inset: 0; width: 100%; height: 100%; display: block;
+    touch-action: manipulation; cursor: pointer; outline: none;
+  }
+  #scene:focus-visible { outline: 2px solid #54f08a; outline-offset: -4px; }
+  /* legend: decimal reading + a fixed quadrant key, centred low */
+  .legend {
+    position: fixed; left: 50%; bottom: max(18px, env(safe-area-inset-bottom));
+    transform: translateX(-50%); z-index: 4; text-align: center;
+    pointer-events: none; display: grid; gap: 5px; width: max-content;
+    max-width: calc(100% - 28px);
+  }
+  .legend .read {
+    color: #54f08a; font-size: 13px; letter-spacing: 0.16em;
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-variant-numeric: tabular-nums; white-space: nowrap;
+  }
+  .legend .key {
+    color: rgba(220,250,230,0.42); font-size: 10px; letter-spacing: 0.06em;
+    white-space: nowrap;
+  }
+  /* transient mode name on switch */
+  .mode {
+    position: fixed; left: 50%; top: max(22px, env(safe-area-inset-top));
+    transform: translateX(-50%) translateY(-6px); z-index: 4;
+    color: rgba(220,250,230,0.9); font-size: 11px; letter-spacing: 0.22em;
+    text-transform: uppercase; pointer-events: none;
+    opacity: 0; transition: opacity 0.3s ease, transform 0.3s ease;
+  }
+  .mode.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  .help {
+    position: fixed; right: 14px; top: max(14px, env(safe-area-inset-top)); z-index: 5;
+    width: 38px; height: 38px; display: flex; align-items: center; justify-content: center;
+    border-radius: 50%; border: 1px solid rgba(84,240,138,.35); color: rgba(220,250,230,.85);
+    text-decoration: none; font-weight: 600; font-size: 1.2rem; background: rgba(4,9,18,.4);
+    backdrop-filter: blur(4px); transition: background .25s, border-color .25s, transform .25s;
+  }
+  .help:hover, .help:focus-visible { background: rgba(84,240,138,.12); border-color: #54f08a; transform: scale(1.06); outline: none; }
+  .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+</style>
+</head>
+<body>
+  <canvas id="scene" role="img" tabindex="0"
+    aria-label="The current local 24-hour time written as three separate medieval Cistercian numerals for hours, minutes, and seconds. The exact time is shown below and announced."></canvas>
+  <a class="help" href="https://lukesteuber.com" aria-label="Luke Steuber's website">?</a>
+  <div class="legend" aria-hidden="true">
+    <div class="read" id="read">--:--</div>
+  </div>
+  <div class="mode" id="modeName" aria-hidden="true"></div>
+  <div class="sr-only" id="sr" aria-live="polite">Loading clock.</div>
+
+<script>
+(function () {
+  "use strict";
+
+  // gallery previews load this page in an iframe: hide the legend/key/mode
+  // chrome there, leaving only the glyph(s). Standalone keeps the legend.
+  if (window.self !== window.top) {
+    var lg = document.querySelector('.legend'); if (lg) lg.style.display = 'none';
+    var md = document.getElementById('modeName'); if (md) md.style.display = 'none';
+  }
+
+  var canvas = document.getElementById('scene');
+  var ctx = canvas.getContext('2d');
+  var readEl = document.getElementById('read');
+  var modeEl = document.getElementById('modeName');
+  var sr = document.getElementById('sr');
+
+  var CYAN = '#54f08a';
+
+  // --------------------------------------------------------------------------
+  // GLYPH GEOMETRY
+  // One table of the canonical Cistercian *units* shapes (top-right quadrant),
+  // expressed as line segments in a normalised [0,1] x [0,1] box whose origin
+  // is at the top of the stave (x grows right, y grows down). The other three
+  // quadrants reuse this same table through mirroring: tens = flip-X,
+  // hundreds = flip-Y, thousands = flip-XY. Digit 0 draws nothing.
+  // --------------------------------------------------------------------------
+  var UNITS = {
+    1: [[0,0, 1,0]],                          // top edge
+    2: [[0,1, 1,1]],                          // bottom edge
+    3: [[0,0, 1,1]],                          // top-left to bottom-right
+    4: [[0,1, 1,0]],                          // bottom-left to top-right
+    5: [[0,1, 1,0],[0,0, 1,0]],               // 4 + top edge
+    6: [[1,0, 1,1]],                          // outer vertical
+    7: [[1,0, 1,1],[0,0, 1,0]],               // 6 + top edge
+    8: [[1,0, 1,1],[0,1, 1,1]],               // 6 + bottom edge
+    9: [[0,0, 1,0],[1,0, 1,1],[1,1, 0,1]]     // top + outer + bottom (open box)
+  };
+
+  // map a normalised quadrant point (lx,ly in [0,1]) to glyph-local coords,
+  // given the quadrant key, the stave half-height S and the quadrant size q.
+  function place(quad, lx, ly, S, q) {
+    var x = lx * q, y = ly * q;
+    if (quad === 'u')  return [ x, -S + y];   // top-right
+    if (quad === 't')  return [-x, -S + y];   // top-left  (flip-X)
+    if (quad === 'h')  return [ x,  S - y];   // bottom-right (flip-Y)
+    return [-x,  S - y];                       // 'th' bottom-left (flip-XY)
+  }
+
+  var QUAD_OF = { u: 'units', t: 'tens', h: 'hundreds', th: 'thousands' };
+
+  // draw a single glyph centred at (cx,cy). `value` 0-9999. `quads` is the list
+  // of active quadrants (defaults to all four); pass ['u','t'] for a two-digit
+  // 0-59 value so only the top half fills.
+  function drawGlyph(cx, cy, value, scale, quads) {
+    quads = quads || ['u', 't', 'h', 'th'];
+    var S = scale / 2;
+    var q = scale * 0.40;
+    var lw = Math.max(2, scale * 0.032);
+
+    var digits = {
+      u: value % 10,
+      t: Math.floor(value / 10) % 10,
+      h: Math.floor(value / 100) % 10,
+      th: Math.floor(value / 1000) % 10
+    };
+
+    ctx.save();
+    ctx.strokeStyle = CYAN;
+    ctx.lineWidth = lw;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    ctx.shadowColor = 'rgba(84,240,138,0.55)';
+    ctx.shadowBlur = Math.max(6, scale * 0.05);
+
+    // the stave
+    ctx.beginPath();
+    ctx.moveTo(cx, cy - S);
+    ctx.lineTo(cx, cy + S);
+    ctx.stroke();
+
+    // the quadrant marks
+    for (var i = 0; i < quads.length; i++) {
+      var quad = quads[i];
+      var d = digits[quad];
+      if (!d) continue;                       // 0 -> nothing
+      var segs = UNITS[d];
+      ctx.beginPath();
+      for (var j = 0; j < segs.length; j++) {
+        var s = segs[j];
+        var a = place(quad, s[0], s[1], S, q);
+        var b = place(quad, s[2], s[3], S, q);
+        ctx.moveTo(cx + a[0], cy + a[1]);
+        ctx.lineTo(cx + b[0], cy + b[1]);
+      }
+      ctx.stroke();
+    }
+    ctx.restore();
+  }
+
+  // a seconds ring sweeping from the top, clockwise, resetting each minute
+  function drawRing(cx, cy, r, frac) {
+    ctx.save();
+    ctx.lineCap = 'round';
+    // faint base
+    ctx.strokeStyle = 'rgba(84,240,138,0.16)';
+    ctx.lineWidth = Math.max(2, r * 0.03);
+    ctx.beginPath();
+    ctx.arc(cx, cy, r, 0, Math.PI * 2);
+    ctx.stroke();
+    // bright sweep
+    ctx.strokeStyle = 'rgba(84,240,138,0.85)';
+    ctx.lineWidth = Math.max(2.5, r * 0.04);
+    ctx.shadowColor = 'rgba(84,240,138,0.5)';
+    ctx.shadowBlur = r * 0.12;
+    ctx.beginPath();
+    ctx.arc(cx, cy, r, -Math.PI / 2, -Math.PI / 2 + frac * Math.PI * 2);
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  // separator dot for the triple reading
+  function drawDot(cx, cy) {
+    ctx.save();
+    ctx.fillStyle = 'rgba(84,240,138,0.5)';
+    ctx.beginPath();
+    ctx.arc(cx, cy, Math.max(2, 4), 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+  }
+
+  // --------------------------------------------------------------------------
+  // CANVAS SIZING
+  // --------------------------------------------------------------------------
+  var DPR = 1, W = 0, H = 0;
+  function resize() {
+    DPR = Math.min(window.devicePixelRatio || 1, 2);
+    var r = canvas.getBoundingClientRect();
+    W = Math.max(1, Math.round(r.width));
+    H = Math.max(1, Math.round(r.height));
+    canvas.width = Math.round(W * DPR);
+    canvas.height = Math.round(H * DPR);
+    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+    lastMin = -1; // force a repaint after a resize
+  }
+  window.addEventListener('resize', resize);
+  window.addEventListener('orientationchange', function () { requestAnimationFrame(resize); });
+
+  // --------------------------------------------------------------------------
+  // MODES
+  // --------------------------------------------------------------------------
+  var MODES = [
+    { id: 'single', name: 'Single glyph' },
+    { id: 'ring',   name: 'Glyph + seconds ring' },
+    { id: 'split',  name: 'HHMM + seconds' },
+    { id: 'triple', name: 'Hours · minutes · seconds' }
+  ];
+  var mi = 3;   // reading is locked in this variant
+
+  var modeTimer = null;
+  function flashMode() {
+    modeEl.textContent = MODES[mi].name;
+    modeEl.classList.add('show');
+    if (modeTimer) clearTimeout(modeTimer);
+    modeTimer = setTimeout(function () { modeEl.classList.remove('show'); }, 1500);
+  }
+  function cycleMode(dir) {}  // reading is locked in this variant
+
+  // --------------------------------------------------------------------------
+  // RENDER
+  // --------------------------------------------------------------------------
+  function pad2(n) { return n < 10 ? '0' + n : '' + n; }
+
+  var lastMin = -1, lastSR = -1;
+
+  function tick() {
+    var now = new Date();
+    var h = now.getHours();
+    var m = now.getMinutes();
+    var s = now.getSeconds();
+    var frac = (s + now.getMilliseconds() / 1000) / 60;
+    var hhmm = h * 100 + m;
+    var mode = MODES[mi].id;
+
+    // mode 'single' only needs to repaint on the minute; the others animate.
+    var animated = (mode !== 'single');
+    if (!animated && m === lastMin) {
+      announce(h, m, s);
+      return;
+    }
+    if (!animated) lastMin = m;
+
+    ctx.clearRect(0, 0, W, H);
+    // Vertical centring: standalone reserves a band at the bottom for the
+    // legend; in a gallery embed the legend is hidden, so centre on H/2.
+    // A glyph is symmetric about its own (cx, cy), so centring the drawn
+    // extent reduces to centring those centres.
+    var HALF_W = 0.40;          // glyph half-width as a fraction of its scale
+    var embedded = (window.self !== window.top);
+    var availV = embedded ? H : Math.max(120, H - 96);
+    var cy = embedded ? H / 2 : availV / 2;
+
+    if (mode === 'single') {
+      var sc = Math.min(W * 0.55, availV * 0.92, 460);
+      drawGlyph(W / 2, cy, hhmm, sc);
+      readEl.textContent = pad2(h) + ':' + pad2(m) + ' · ' + pad2(h) + pad2(m);
+
+    } else if (mode === 'ring') {
+      var sc2 = Math.min(W * 0.46, availV * 0.62, 380);
+      drawGlyph(W / 2, cy, hhmm, sc2);
+      drawRing(W / 2, cy, sc2 * 0.62, frac);
+      readEl.textContent = pad2(h) + ':' + pad2(m) + ':' + pad2(s) + ' · ' + pad2(h) + pad2(m);
+
+    } else if (mode === 'split') {
+      // HHMM glyph + a comparably sized seconds glyph, centred AS A PAIR on W/2.
+      var s1 = Math.min(W * 0.30, availV * 0.78, 300);
+      var s2 = s1 * 0.78;                       // sized close to the HHMM glyph
+      var hw1 = s1 * HALF_W, hw2 = s2 * HALF_W; // true half-widths drawn
+      var gap = s1 * 0.34;                       // clear air between the staves
+      var totalW = hw1 + gap + hw2 + hw1 + hw2;  // = (2*hw1) + gap + (2*hw2)
+      var left = W / 2 - totalW / 2;
+      var cxL = left + hw1;                      // HHMM glyph centre
+      var cxR = cxL + hw1 + gap + hw2;           // seconds glyph centre
+      drawGlyph(cxL, cy, hhmm, s1);
+      drawGlyph(cxR, cy, s, s2, ['u', 't']);
+      readEl.textContent = pad2(h) + ':' + pad2(m) + ':' + pad2(s) + ' · ' + pad2(h) + pad2(m) + ' + ' + pad2(s);
+
+    } else { // triple
+      // three equal glyphs, evenly spaced, the set centred on W/2.
+      var s3 = Math.min(W * 0.24, availV * 0.80, 240);
+      var hw3 = s3 * HALF_W;
+      var gap3 = s3 * 0.34;
+      var spacing = 2 * hw3 + gap3;              // centre-to-centre, even gaps
+      // keep the outer glyphs on-canvas on narrow viewports
+      spacing = Math.min(spacing, (W / 2 - hw3) - 6);
+      var vals = [h, m, s];
+      for (var i = 0; i < 3; i++) {
+        var gx = W / 2 + (i - 1) * spacing;      // centred set: -spacing, 0, +spacing
+        drawGlyph(gx, cy, vals[i], s3, ['u', 't']);
+        if (i < 2) drawDot(gx + spacing / 2, cy);
+      }
+      readEl.textContent = pad2(h) + ' · ' + pad2(m) + ' · ' + pad2(s);
+    }
+
+    announce(h, m, s);
+  }
+
+  function announce(h, m, s) {
+    if (m === lastSR) return;
+    lastSR = m;
+    sr.textContent = 'Cistercian clock, ' + MODES[mi].name.toLowerCase() +
+      '. Local 24-hour time ' + pad2(h) + ':' + pad2(m) + '.';
+  }
+
+  var rafId = null;
+  function loop() { tick(); rafId = requestAnimationFrame(loop); }
+  function start() {
+    if (rafId) cancelAnimationFrame(rafId);
+    rafId = requestAnimationFrame(loop);
+  }
+  document.addEventListener('visibilitychange', function () {
+    if (document.hidden) { if (rafId) { cancelAnimationFrame(rafId); rafId = null; } }
+    else if (!rafId) { lastMin = -1; rafId = requestAnimationFrame(loop); }
+  });
+
+  // --------------------------------------------------------------------------
+  // INPUT: tap / click / keyboard handlers retained but cycling is disabled
+  // --------------------------------------------------------------------------
+  var down = null;
+  canvas.addEventListener('pointerdown', function (e) {
+    down = [e.clientX, e.clientY, performance.now()];
+  });
+  window.addEventListener('pointerup', function (e) {
+    if (!down) return;
+    if (e.target.closest && e.target.closest('a')) { down = null; return; }
+    var dx = e.clientX - down[0], dy = e.clientY - down[1];
+    if (dx * dx + dy * dy < 64 && performance.now() - down[2] < 600) cycleMode(1);
+    down = null;
+  });
+  canvas.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); cycleMode(1); }
+    else if (e.key === 'ArrowRight') { e.preventDefault(); cycleMode(1); }
+    else if (e.key === 'ArrowLeft') { e.preventDefault(); cycleMode(-1); }
+  });
+
+  resize();
+  start();
+})();
+</script>
+<script>window.aboutClock = {
+  title: 'Cistercian: Triple',
+  board: { label: 'Ciphers', href: '/clocks/numerals/' },
+  body: '<p>Cistercian numerals were a shorthand devised by monks of the Cistercian order around 1300, in what is now France and the Low Countries. The idea is that a single glyph can hold any number from 1 to 9999. You take one vertical stem and hang a little mark in each corner: top-right is ones, top-left is tens, bottom-right is hundreds, bottom-left is thousands. Read the four corners off the one stem and you have the whole number. The monks used them to number pages and mark years before the system faded from use.</p>'
+      + '<p>Here the time splits into three separate glyphs, one each for hours, minutes and seconds, so each two-digit number keeps its own stem rather than crowding onto one. (Refreshingly, this is one code where being colourblind costs me nothing.)</p>'
+};</script>
+<!--inlined:about-modal.js-->
+<script>
+/* about-modal.js — a drop-in "?" explainer for a clock.
+ *
+ * Usage: set the config, then load this file (no build step, no other deps):
+ *   <script>window.aboutClock = { title: 'Maya', body: '<p>…</p>' };<\/script>
+ *   <script src="/clocks/shared/about-modal.js"><\/script>
+ *
+ * If the page already has a `.help` "?" control it upgrades that in place:
+ * clicking it opens an accessible dialog explaining the clock instead of
+ * navigating away (the original href stays as a no-JS fallback). If there is
+ * NO `.help` control, it synthesizes its own house-styled "?" button (top
+ * right) so any clock becomes self-documenting by just including the script.
+ * The synthesized button only appears in the standalone full-page view, never
+ * inside a gallery preview iframe (window.self === window.top), matching the
+ * GoatCounter gate used elsewhere.
+ *
+ * Theming: the dialog reads the page's --accent / --bg / --ink custom
+ * properties when present, falling back to the house phosphor palette.
+ */
+(function () {
+  'use strict';
+
+  var cfg = window.aboutClock;
+  if (!cfg || (!cfg.body && !(cfg.pages && cfg.pages.length))) return;
+
+  function onReady(fn) {
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', fn);
+    } else {
+      fn();
+    }
+  }
+
+  onReady(function () {
+    var trigger = document.querySelector('.help:not(.dice)') || document.querySelector('.help');
+    if (!trigger) {
+      // No "?" control on the page: synthesize one, but only in the standalone
+      // full-page view — it would be dead weight inside a gallery preview iframe.
+      if (window.self !== window.top) return;
+      var hs = document.createElement('style');
+      hs.textContent =
+        ".about-help-auto{position:fixed;top:max(.6rem,env(safe-area-inset-top));" +
+        "right:max(.6rem,env(safe-area-inset-right));z-index:30;display:flex;" +
+        "align-items:center;justify-content:center;min-width:44px;min-height:44px;" +
+        "background:none;border:none;cursor:pointer;color:var(--accent,#5cd9ff);" +
+        "opacity:.55;font:700 19px/1 'Atkinson Hyperlegible',ui-sans-serif,sans-serif;" +
+        "border-radius:6px;transition:opacity .25s ease;}" +
+        ".about-help-auto:hover,.about-help-auto:focus-visible{opacity:1;}" +
+        ".about-help-auto:focus-visible{outline:2px solid currentColor;outline-offset:3px;}";
+      document.head.appendChild(hs);
+      trigger = document.createElement('button');
+      trigger.type = 'button';
+      trigger.className = 'about-help-auto';
+      trigger.setAttribute('aria-label', 'About this clock');
+      trigger.textContent = '?';
+      document.body.appendChild(trigger);
+    }
+
+    // load the reading font (Atkinson Hyperlegible, as used across the other
+    // projects) so explanatory prose never falls back to the console mono.
+    if (!document.querySelector('link[data-about-font]')) {
+      var fl = document.createElement('link');
+      fl.rel = 'stylesheet';
+      fl.setAttribute('data-about-font', '');
+      fl.href = 'https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&display=swap';
+      document.head.appendChild(fl);
+    }
+
+    // ---- styles (injected once) ----------------------------------------
+    var css =
+      '.about-backdrop[hidden]{display:none;}' +
+      '.about-backdrop{position:fixed;inset:0;z-index:1000;display:flex;' +
+      'align-items:center;justify-content:center;padding:24px;' +
+      'background:rgba(2,5,11,0.40);backdrop-filter:blur(8px);' +
+      'opacity:0;transition:opacity .34s ease;}' +
+      '.about-backdrop[data-open]{opacity:1;}' +
+      '.about-card{position:relative;max-width:30rem;width:100%;' +
+      'max-height:calc(100vh - 48px);overflow:auto;' +
+      'background:var(--bg2, var(--bg, #060a14));' +
+      'border:1px solid rgba(150,154,168,0.18);border-radius:12px;' +
+      'box-shadow:0 18px 60px rgba(0,0,0,0.5);' +
+      'padding:26px 26px 20px;' +
+      "font-family:'Atkinson Hyperlegible', ui-sans-serif, system-ui, -apple-system, sans-serif;" +
+      'color:var(--ink, rgba(255,255,255,0.82));' +
+      'transform:translateY(10px);transition:transform .34s ease;}' +
+      '.about-backdrop[data-open] .about-card{transform:none;}' +
+      '.about-card h2{margin:0 0 12px;font-size:13px;font-weight:700;' +
+      'letter-spacing:0.34em;text-transform:uppercase;' +
+      'color:var(--accent, #5cd9ff);padding-right:32px;}' +
+      '.about-card p{margin:0 0 11px;font-size:13px;line-height:1.62;' +
+      'letter-spacing:0.01em;color:var(--ink, rgba(255,255,255,0.82));}' +
+      '.about-body a{color:var(--accent, #5cd9ff);text-decoration:underline;' +
+      'text-decoration-thickness:1px;text-underline-offset:2px;font-weight:600;' +
+      'border-radius:2px;transition:opacity .2s ease;}' +
+      '.about-body a:hover,.about-body a:focus-visible{text-decoration-thickness:2px;opacity:0.82;}' +
+      '.about-pages{display:flex;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;' +
+      '-webkit-overflow-scrolling:touch;scrollbar-width:none;margin:0 -26px;}' +
+      '.about-pages::-webkit-scrollbar{display:none;}' +
+      '.about-page{flex:0 0 100%;scroll-snap-align:center;padding:0 26px;box-sizing:border-box;}' +
+      '.about-page>:first-child{margin-top:0;}' +
+      '.about-dots{display:flex;justify-content:center;gap:9px;margin-top:18px;}' +
+      '.about-dot{width:7px;height:7px;border-radius:50%;border:none;padding:0;cursor:pointer;' +
+      'background:rgba(150,154,168,0.3);transition:background .2s, transform .2s;}' +
+      '.about-dot.on{background:var(--accent, #5cd9ff);transform:scale(1.25);}' +
+      '.about-card .about-map{margin:14px 0 4px;padding-top:13px;' +
+      'border-top:1px solid rgba(128,128,128,0.22);font-size:12px;' +
+      'line-height:1.7;color:var(--dim, rgba(255,255,255,0.52));}' +
+      '.about-card .about-map b{color:var(--accent, #5cd9ff);font-weight:600;}' +
+      '.about-foot{display:flex;justify-content:space-between;align-items:center;' +
+      'margin-top:18px;gap:10px 16px;flex-wrap:wrap;}' +
+      '.about-foot a{color:var(--accent, #5cd9ff);text-decoration:none;' +
+      'font-size:11px;letter-spacing:0.12em;text-transform:uppercase;}' +
+      '.about-foot a.about-board::before{content:"\\2039\\00a0";}' +
+      '.about-foot a:hover,.about-foot a:focus-visible{text-decoration:underline;}' +
+      '.about-close{position:absolute;top:14px;right:14px;width:32px;height:32px;' +
+      'display:flex;align-items:center;justify-content:center;cursor:pointer;' +
+      'background:none;border:none;color:var(--dim, rgba(255,255,255,0.55));' +
+      "font:700 22px/1 'Atkinson Hyperlegible', ui-sans-serif, sans-serif;border-radius:4px;}" +
+      '.about-close:hover,.about-close:focus-visible{color:var(--accent, #5cd9ff);' +
+      'outline:2px solid var(--accent, #5cd9ff);outline-offset:1px;}';
+    var style = document.createElement('style');
+    style.textContent = css;
+    document.head.appendChild(style);
+
+    // ---- dialog DOM -----------------------------------------------------
+    var backdrop = document.createElement('div');
+    backdrop.className = 'about-backdrop';
+    backdrop.hidden = true;
+
+    var card = document.createElement('div');
+    card.className = 'about-card';
+    card.setAttribute('role', 'dialog');
+    card.setAttribute('aria-modal', 'true');
+    card.setAttribute('aria-labelledby', 'about-title');
+    card.tabIndex = -1;
+
+    var titleId = 'about-title';
+    card.innerHTML =
+      '<button class="about-close" type="button" aria-label="Close">×</button>' +
+      '<h2 id="' + titleId + '"></h2>' +
+      '<div class="about-body"></div>' +
+      '<div class="about-foot">' +
+        '<a class="about-board" href="/clocks/">all clocks</a>' +
+        '<a href="https://datapoems.io">data poems</a>' +
+        '<a href="https://lukesteuber.com">about me</a>' +
+      '</div>';
+    card.querySelector('h2').textContent = cfg.title || 'About this clock';
+    var bodyEl = card.querySelector('.about-body');
+    // cfg.pages (array of HTML strings) => a horizontal snap-scroll sequence with
+    // dots, so a long modal becomes a few swipeable pages. cfg.body => one column.
+    if (cfg.pages && cfg.pages.length) {
+      var phtml = '<div class="about-pages">';
+      for (var pi = 0; pi < cfg.pages.length; pi++) phtml += '<div class="about-page">' + cfg.pages[pi] + '</div>';
+      bodyEl.innerHTML = phtml + '</div><div class="about-dots"></div>';
+      var pagesEl = bodyEl.querySelector('.about-pages');
+      var dotsEl = bodyEl.querySelector('.about-dots');
+      cfg.pages.forEach(function (_, idx) {
+        var dot = document.createElement('button');
+        dot.type = 'button';
+        dot.className = 'about-dot' + (idx === 0 ? ' on' : '');
+        dot.setAttribute('aria-label', 'Page ' + (idx + 1));
+        dot.addEventListener('click', function () {
+          pagesEl.scrollTo({ left: idx * pagesEl.clientWidth, behavior: 'smooth' });
+        });
+        dotsEl.appendChild(dot);
+      });
+      pagesEl.addEventListener('scroll', function () {
+        var idx = Math.round(pagesEl.scrollLeft / Math.max(1, pagesEl.clientWidth));
+        for (var k = 0; k < dotsEl.children.length; k++) {
+          dotsEl.children[k].className = 'about-dot' + (k === idx ? ' on' : '');
+        }
+      }, { passive: true });
+    } else {
+      bodyEl.innerHTML = cfg.body;
+    }
+    // Optional per-clock board link, e.g. { label: 'Ciphers', href: '/clocks/numerals/' }.
+    var boardLink = card.querySelector('.about-board');
+    if (cfg.board && cfg.board.href) {
+      boardLink.setAttribute('href', cfg.board.href);
+      boardLink.textContent = cfg.board.label || 'back';
+    }
+
+    backdrop.appendChild(card);
+    document.body.appendChild(backdrop);
+
+    var closeBtn = card.querySelector('.about-close');
+    var lastFocus = null;
+
+    function focusables() {
+      return Array.prototype.slice.call(
+        card.querySelectorAll('a[href], button:not([disabled])')
+      );
+    }
+
+    function open() {
+      lastFocus = document.activeElement;
+      backdrop.hidden = false;
+      // force reflow so the opacity transition runs
+      void backdrop.offsetWidth;
+      backdrop.setAttribute('data-open', '');
+      card.focus();
+      document.addEventListener('keydown', onKey, true);
+    }
+
+    function close() {
+      backdrop.removeAttribute('data-open');
+      document.removeEventListener('keydown', onKey, true);
+      setTimeout(function () { backdrop.hidden = true; }, 200);
+      if (lastFocus && lastFocus.focus) lastFocus.focus();
+    }
+
+    function onKey(e) {
+      if (e.key === 'Escape') { e.preventDefault(); close(); return; }
+      if (e.key === 'Tab') {
+        var f = focusables();
+        if (!f.length) return;
+        var first = f[0], last = f[f.length - 1];
+        if (e.shiftKey && document.activeElement === first) {
+          e.preventDefault(); last.focus();
+        } else if (!e.shiftKey && document.activeElement === last) {
+          e.preventDefault(); first.focus();
+        }
+      }
+    }
+
+    backdrop.addEventListener('click', function (e) {
+      if (e.target === backdrop) close();
+    });
+    closeBtn.addEventListener('click', close);
+
+    // upgrade the "?" trigger to open the dialog (keep href as fallback).
+    // Relabel it: the original markup often labelled this control for its old
+    // job (a link to the gallery or my site), which is now misleading once it
+    // opens the explainer dialog. Name it for what it actually does.
+    trigger.setAttribute('role', 'button');
+    trigger.setAttribute('aria-haspopup', 'dialog');
+    trigger.setAttribute('aria-label', cfg.title ? 'About the ' + cfg.title + ' clock' : 'About this clock');
+    trigger.addEventListener('click', function (e) {
+      e.preventDefault();
+      open();
+    });
+  });
+})();
+</script>
+<!--/inlined:about-modal.js-->
+<script>/* only count real visits, not gallery previews in an iframe */
+if (window.self === window.top) {
+  var g = document.createElement("script"); g.async = true;
+  g.setAttribute("data-goatcounter", "https://stats.dr.eamer.dev/count");
+  g.src = "https://stats.dr.eamer.dev/count.js";
+  document.body.appendChild(g);
+}</script>
+</body>
+</html>

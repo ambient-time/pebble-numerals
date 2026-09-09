@@ -1,0 +1,70 @@
+[
+  {
+    "family": "GFS Didot",
+    "file": "gfsdidot.ttf",
+    "url": "https://fonts.gstatic.com/l/font?kit=Jqzh5TybZ9vZMWFssvwiF__h15hTtUHwhZ3HxOf6gebDXEyXgVCk7Z439pYjTphnwidNjIA&skey=e557a45a8e5b3a1b&v=v18",
+    "sha256": "5c29bfcb518aedee94a246d2d078343ed49cea4d831cd6b39d017c3ce6ca7a50",
+    "characters": "\u03b1\u03b2\u03b3\u03b4\u03b5\u03db\u03b6\u03b7\u03b8\u03b9\u03ba\u03bb\u03bc\u03bd\u0374\u25cb",
+    "license": "gfsdidot-OFL.txt"
+  },
+  {
+    "family": "Noto Sans Glagolitic",
+    "file": "notosansglagolitic.ttf",
+    "url": "https://fonts.gstatic.com/l/font?kit=1q2ZY4-BBFBst88SU_tOj4J-4yuNF_HI4ERK-CaWDdu0-8qUpA_Vb3ROA8m7O5ik2jsj6C61vP9De6mJ8Ap1U0gNhDgNuXPZ&skey=be43342744579c49&v=v19",
+    "sha256": "a88b1281137de6acc9614c8928bf1f654993959d2d78b97adcfc466d1d98e88c",
+    "characters": "\u2c00\u2c01\u2c02\u2c03\u2c04\u2c05\u2c06\u2c07\u2c08\u2c09\u2c0b\u2c0c\u2c0d\u2c0e0",
+    "license": "notosansglagolitic-OFL.txt"
+  },
+  {
+    "family": "Noto Sans Brahmi",
+    "file": "notosansbrahmi.ttf",
+    "url": "https://fonts.gstatic.com/l/font?kit=vEFK2-VODB8RrNDvZSUmQQIIByV18tKtZFRRJztF_C1Em9tuuek5WemyC0rZH53r-3WGMcRN3-jCYk28sSluVcxbzG9Y70uYA1mrRk6gbLXsVEY9&skey=53cd0122cee9b581&v=v20",
+    "sha256": "0aaead3d3473c59634008def2aa38cdcbce83432a7910e227f63cb9b6d225b10",
+    "characters": "\ud804\udc52\ud804\udc53\ud804\udc54\ud804\udc55\ud804\udc56\ud804\udc57\ud804\udc58\ud804\udc59\ud804\udc5a\ud804\udc5b\ud804\udc5c\ud804\udc5d\ud804\udc5e\ud804\udc5f\u25cb",
+    "license": "notosansbrahmi-OFL.txt"
+  },
+  {
+    "family": "Noto Serif Ethiopic",
+    "file": "notoserifethiopic.ttf",
+    "url": "https://fonts.gstatic.com/l/font?kit=V8mjoR7-XjwJ8_Au3Ti5tXj5Rd83frpWLK4d-taxqWw2HMWjDxBAg5S_0QsrggxCzSUjkbuUuN5Da14eBNJfZrndsdVMKnWyR2Xrnfel1wMqLPilj5PM5Sh0pllqiPwq6r4L&skey=9542de61d01694c3&v=v32",
+    "sha256": "6127593d093d9ce18e591b9e90e40e0f3b8bc6ebbc5ea559f5cd53ddac08d93f",
+    "characters": "\u1369\u136a\u136b\u136c\u136d\u136e\u136f\u1370\u1371\u1372\u1373\u1374\u1375\u1376\u25cb",
+    "license": "notoserifethiopic-OFL.txt"
+  },
+  {
+    "family": "Noto Sans KR",
+    "file": "notosanskr.ttf",
+    "url": "https://fonts.gstatic.com/l/font?kit=PbyxFmXiEBPT4ITbgNA5Cgms3VYcOA-vvnIzzuoyeLTyOHLB4WAZ5N2pM8V2QDMdrAyaGLFZd6yDxdcGUIG1lpeo-sX_L8sD5EUDLrRzrDg99Xokz6N1x32hrq2Xn29c_pusD28mC_aWt6Wg9QNZtJRD0ifbfw3G5l63Ne4DZWhTf4MukFSLfFSp2fmAXiCFHLX9iScni4Rff_j3vZP_Fj6ze5wv060jUl0WbMk6mOvvQTIkG1bf8jmKBpVaPvoRhOemq8Ln13DKE_zJshmM3IC14lSHo7ILK2Q8LOgBMCJDKO3GH2w8vep40YYyZUKZzs4ZCSwelMZmg5PZdJaCWw9k2QG0xwRJ1g6Mq3vfIc8ES3M6rTW-NN2i7Z5byBazelWdQy1QP5P0XpOFlAjqiNoGDLBrZJ3esLm3I403-vFeL4yWfGSN4v4yHd4eDBytu7pE5w0IMcB3n4G7Hjo-lGQ3AEG73hEDg1hnefemwQudAH2aORdMp9ChjbcvAMQXy5VFCvxgQ1mDLUdiVxA3gcKvGJ47WXkPV1jSk_KM4ka_nYj2v4P_LVVXv4lIGS56UtrxSumerP-T9C3sVyMHFiFiB0l11U7yjJnthFaOqbppun1hLfotMufi2o5hj_8rprq0XML3XBlT_8msT2xvVnR2jCUJg_g4ElYKts-hzrtVW4E1MW57KhiWkxIDjPfflN1q1cGo_kdMAVHiB6n84BqWaNgmm0gKmEFRazwUQbcd3R_Ydt9LPquxRRUBYya1WZ-rjWV2ckC3xDS84m4jy2TskBOWt5DFMm3DH17OK1bwejMaf4cy7-iKBV1HnD4&skey=87e7ee645936e2c7&v=v39",
+    "sha256": "eed924504e0ba9394f215d8cb854cf37a06a343abc10dd0ab28e91910e98d114",
+    "characters": "\uc601\uc77c\uc774\uc0bc\uc0ac\uc624\uc721\uce60\ud314\uad6c\uc2ed",
+    "license": "notosanskr-OFL.txt"
+  },
+  {
+    "family": "JetBrains Mono",
+    "file": "jetbrainsmono.ttf",
+    "url": "https://fonts.gstatic.com/l/font?kit=tDbY2o-flEEny0FZhsfKu5WU4zr3E_BX0PnT8RD8yKxjPUGAiZaptT_0V2m2Fla-hGdg3Q&skey=48ad01c60053c2ae&v=v24",
+    "sha256": "68941b69f6141bb77e07c2211f93dda010c40456f851594539348c452060d45c",
+    "characters": "0123456789ABCDEF",
+    "license": "jetbrainsmono-OFL.txt"
+  },
+  {
+    "family": "Cinzel",
+    "file": "cinzel.ttf",
+    "url": "https://fonts.gstatic.com/l/font?kit=8vIU7ww63mVu7gtR-kwKxNvkNOjw-tbnTYr3Dg8UOPwX5Q&skey=f319ae43d1034808&v=v26",
+    "sha256": "99862c1e594025e14c2483556e79feb75715a7b71f6e724e2e436a4ffba32111",
+    "characters": "IVXL\u00b7",
+    "license": "cinzel-OFL.txt"
+  },
+  {
+    "family": "Alcarin",
+    "file": "alcarin-tengwar.ttf",
+    "sha256": "0ff2b1049661933f1122fa075ccf22bc03ff90f06bbdef6d29b36e2499106b34",
+    "license": "alcarin-tengwar-LICENSE.txt"
+  },
+  {
+    "family": "pIqaD",
+    "file": "piqad-hasta.ttf",
+    "sha256": "b71d452bdebf7f92e338d594a0a05f143e879011f8ced7191f5ce516e5ca1e09",
+    "license": "piqad-hasta-LICENSE.txt"
+  }
+]

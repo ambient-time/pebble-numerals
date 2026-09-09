@@ -1,0 +1,205 @@
+[
+  {
+    "slug": "roman",
+    "httpStatus": 200,
+    "liveSHA256": "997b2bd522249dfb1d6ed158b0412022749d1541eda5a0006137265f159c1135",
+    "frozenSHA256": "997b2bd522249dfb1d6ed158b0412022749d1541eda5a0006137265f159c1135",
+    "exactMatch": true
+  },
+  {
+    "slug": "greek-ionic",
+    "httpStatus": 200,
+    "liveSHA256": "fc85180bbc2a746ba8339a1a5feaede1fbbedcec1275304dd8ff6e85072d1fc0",
+    "frozenSHA256": "fc85180bbc2a746ba8339a1a5feaede1fbbedcec1275304dd8ff6e85072d1fc0",
+    "exactMatch": true
+  },
+  {
+    "slug": "glagolitic",
+    "httpStatus": 200,
+    "liveSHA256": "7338f6d088b3f30ecd7007d80edcb8c4b4316134c2bcc978ac94a78a97aff103",
+    "frozenSHA256": "7338f6d088b3f30ecd7007d80edcb8c4b4316134c2bcc978ac94a78a97aff103",
+    "exactMatch": true
+  },
+  {
+    "slug": "etruscan",
+    "httpStatus": 200,
+    "liveSHA256": "53233d8d4493e7a3942822d9b0bb85f0b4e02d5110a7c2c89b8b4fcbff4c8871",
+    "frozenSHA256": "53233d8d4493e7a3942822d9b0bb85f0b4e02d5110a7c2c89b8b4fcbff4c8871",
+    "exactMatch": true
+  },
+  {
+    "slug": "aegean",
+    "httpStatus": 200,
+    "liveSHA256": "f5f20fa7d94503f5040631668712e9ced817aa0b6abc8ed726b55e9519c21ab9",
+    "frozenSHA256": "f5f20fa7d94503f5040631668712e9ced817aa0b6abc8ed726b55e9519c21ab9",
+    "exactMatch": true
+  },
+  {
+    "slug": "brahmi",
+    "httpStatus": 200,
+    "liveSHA256": "9f7f5ada2c6337be87bd6c367533df21da4913bce07a82b3183ef31332d7a16d",
+    "frozenSHA256": "9f7f5ada2c6337be87bd6c367533df21da4913bce07a82b3183ef31332d7a16d",
+    "exactMatch": true
+  },
+  {
+    "slug": "geez",
+    "httpStatus": 200,
+    "liveSHA256": "f429e402aaaf99f5b4274395e9aec67f2128003ed5a5fae6d52752bbd35cd383",
+    "frozenSHA256": "f429e402aaaf99f5b4274395e9aec67f2128003ed5a5fae6d52752bbd35cd383",
+    "exactMatch": true
+  },
+  {
+    "slug": "hangul",
+    "httpStatus": 200,
+    "liveSHA256": "889276f072806cdf4e8ffb4724eb89d17029a2340c0c7237dad55815b973c75b",
+    "frozenSHA256": "889276f072806cdf4e8ffb4724eb89d17029a2340c0c7237dad55815b973c75b",
+    "exactMatch": true
+  },
+  {
+    "slug": "kaktovik",
+    "httpStatus": 200,
+    "liveSHA256": "538881ca5b8674eb812a6519d0d79d47d071d2224b3ef5ba1a74a5c73aaf6d67",
+    "frozenSHA256": "538881ca5b8674eb812a6519d0d79d47d071d2224b3ef5ba1a74a5c73aaf6d67",
+    "exactMatch": true
+  },
+  {
+    "slug": "mayan",
+    "httpStatus": 200,
+    "liveSHA256": "0311a1f53c1cffe0b2fb6c6a1c1e7b9d214ea87b8ad24bdc3b8537334712c8ba",
+    "frozenSHA256": "0311a1f53c1cffe0b2fb6c6a1c1e7b9d214ea87b8ad24bdc3b8537334712c8ba",
+    "exactMatch": true
+  },
+  {
+    "slug": "babylonian",
+    "httpStatus": 200,
+    "liveSHA256": "ccde018d2c6041c43f49e6b86b299463369daa7f99b4abb5d54908e81f1abb28",
+    "frozenSHA256": "ccde018d2c6041c43f49e6b86b299463369daa7f99b4abb5d54908e81f1abb28",
+    "exactMatch": true
+  },
+  {
+    "slug": "counting-rods",
+    "httpStatus": 200,
+    "liveSHA256": "9ee6cb0a2c25a552fe3cc47e85b532ad0e27eb250056b63fdadc58bf5d37cd20",
+    "frozenSHA256": "9ee6cb0a2c25a552fe3cc47e85b532ad0e27eb250056b63fdadc58bf5d37cd20",
+    "exactMatch": true
+  },
+  {
+    "slug": "runic",
+    "httpStatus": 200,
+    "liveSHA256": "f73c49946e1c663424547860ad7275415465f17ac51419b6b59f4ef38644009c",
+    "frozenSHA256": "f73c49946e1c663424547860ad7275415465f17ac51419b6b59f4ef38644009c",
+    "exactMatch": true
+  },
+  {
+    "slug": "cistercian-triple",
+    "httpStatus": 200,
+    "liveSHA256": "04de83780eaef82e554c85c49158028363e7d9b971ad6ad2e5c3542e8dba2c9f",
+    "frozenSHA256": "04de83780eaef82e554c85c49158028363e7d9b971ad6ad2e5c3542e8dba2c9f",
+    "exactMatch": true
+  },
+  {
+    "slug": "ogham",
+    "httpStatus": 200,
+    "liveSHA256": "0f0da90beb26c35e9267af560b0ff0401a8cc9c6472686924d3b81fa1d185a3e",
+    "frozenSHA256": "0f0da90beb26c35e9267af560b0ff0401a8cc9c6472686924d3b81fa1d185a3e",
+    "exactMatch": true
+  },
+  {
+    "slug": "tally",
+    "httpStatus": 200,
+    "liveSHA256": "886580e47ffb521618db3c6ba2deff0b988883f2932728af1437b9618857b10d",
+    "frozenSHA256": "886580e47ffb521618db3c6ba2deff0b988883f2932728af1437b9618857b10d",
+    "exactMatch": true
+  },
+  {
+    "slug": "binary",
+    "httpStatus": 200,
+    "liveSHA256": "cac99df7dd036d34d7c58671ea03f42e08cb10d9f877406f791afedecd230a8c",
+    "frozenSHA256": "cac99df7dd036d34d7c58671ea03f42e08cb10d9f877406f791afedecd230a8c",
+    "exactMatch": true
+  },
+  {
+    "slug": "ternary",
+    "httpStatus": 200,
+    "liveSHA256": "8247d49483f8ffd44cb203e4cc96de1b5cf55dafe5921231ed1a95ffe6294e44",
+    "frozenSHA256": "8247d49483f8ffd44cb203e4cc96de1b5cf55dafe5921231ed1a95ffe6294e44",
+    "exactMatch": true
+  },
+  {
+    "slug": "negabinary",
+    "httpStatus": 200,
+    "liveSHA256": "f5e9c5497f2be0ee81c2a23c260e71dc1e6d859807a4f9ca4b78fd7b561aea10",
+    "frozenSHA256": "f5e9c5497f2be0ee81c2a23c260e71dc1e6d859807a4f9ca4b78fd7b561aea10",
+    "exactMatch": true
+  },
+  {
+    "slug": "bcd",
+    "httpStatus": 200,
+    "liveSHA256": "2b47d0f9b3e5199ced571f8e2c2fa5772d82cfe7a859e870c9c660e18cfe7aa8",
+    "frozenSHA256": "2b47d0f9b3e5199ced571f8e2c2fa5772d82cfe7a859e870c9c660e18cfe7aa8",
+    "exactMatch": true
+  },
+  {
+    "slug": "gray-code",
+    "httpStatus": 200,
+    "liveSHA256": "ac9de847e14ce5bc98a0fb2307ae76a8dc6e8742a5662065b59876f5c6d87a20",
+    "frozenSHA256": "ac9de847e14ce5bc98a0fb2307ae76a8dc6e8742a5662065b59876f5c6d87a20",
+    "exactMatch": true
+  },
+  {
+    "slug": "hex-clock",
+    "httpStatus": 200,
+    "liveSHA256": "fe13a5ba52f72d95e1534295746981ddf99d2cdb1bd7f6b4ea359e49eb352053",
+    "frozenSHA256": "fe13a5ba52f72d95e1534295746981ddf99d2cdb1bd7f6b4ea359e49eb352053",
+    "exactMatch": true
+  },
+  {
+    "slug": "factoradic",
+    "httpStatus": 200,
+    "liveSHA256": "5258e9e4642d668462ad0d25b1ca4766a518d4dd84d5a988a52127c6ff67f7fa",
+    "frozenSHA256": "5258e9e4642d668462ad0d25b1ca4766a518d4dd84d5a988a52127c6ff67f7fa",
+    "exactMatch": true
+  },
+  {
+    "slug": "brass",
+    "httpStatus": 200,
+    "liveSHA256": "abf0851187143d62595912a279776fb4849cff34ffa3cca8c55e2ca8c50599da",
+    "frozenSHA256": "abf0851187143d62595912a279776fb4849cff34ffa3cca8c55e2ca8c50599da",
+    "exactMatch": true
+  },
+  {
+    "slug": "iching",
+    "httpStatus": 200,
+    "liveSHA256": "36e8bb7ee58db0fe29199b3f32d0ee63a9fa47b27b7a5b6d73fab47f0368f5af",
+    "frozenSHA256": "36e8bb7ee58db0fe29199b3f32d0ee63a9fa47b27b7a5b6d73fab47f0368f5af",
+    "exactMatch": true
+  },
+  {
+    "slug": "aztec",
+    "httpStatus": 200,
+    "liveSHA256": "bb18b62638a6566773687f1348c960a45e7c365c2ef5c48ef879f1e6a4639de3",
+    "frozenSHA256": "bb18b62638a6566773687f1348c960a45e7c365c2ef5c48ef879f1e6a4639de3",
+    "exactMatch": true
+  },
+  {
+    "slug": "tengwar",
+    "httpStatus": 200,
+    "liveSHA256": "9e03357693d2ee944a96e329f7b3a7babe7bb46e1bb67679ad85b93c599d2cb9",
+    "frozenSHA256": "9e03357693d2ee944a96e329f7b3a7babe7bb46e1bb67679ad85b93c599d2cb9",
+    "exactMatch": true
+  },
+  {
+    "slug": "klingon",
+    "httpStatus": 200,
+    "liveSHA256": "11fd92375cfd98a8b4ec2a8e3c2365c810d5cab9513b28a0456756812684d7c5",
+    "frozenSHA256": "11fd92375cfd98a8b4ec2a8e3c2365c810d5cab9513b28a0456756812684d7c5",
+    "exactMatch": true
+  },
+  {
+    "slug": "yautja",
+    "httpStatus": 200,
+    "liveSHA256": "76a0fddb2b11725f4c03315f80737c914fbb99e3c2036230c922ffe90f05ecbc",
+    "frozenSHA256": "76a0fddb2b11725f4c03315f80737c914fbb99e3c2036230c922ffe90f05ecbc",
+    "exactMatch": true
+  }
+]

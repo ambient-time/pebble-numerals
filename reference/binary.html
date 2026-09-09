@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<!--
+  Binary: A binary-coded-decimal clock: six columns of dots, one per digit of HH:MM:SS, each column read top to bottom as 8-4-2-1.
+  A clock from Luke Steuber's gallery: https://datapoems.io/clocks/binary/
+  Author: Luke Steuber · lukesteuber.com · @lukesteuber.com (Bluesky)
+  Copyright 2026 Luke Steuber. MIT License. Reuse freely, keep this credit.
+  Libraries loaded from a CDN (if any) keep their own licenses.
+-->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link rel="icon" type="image/x-icon" href="/assets/images/favicon.ico">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Binary</title>
+<meta name="description" content="A binary-coded-decimal clock: six columns of dots, one per digit of HH:MM:SS, each column read top to bottom as 8-4-2-1. Lit dots sum to the digit printed beneath. The seconds column is the only thing that moves most of the time.">
+<meta property="og:title" content="Binary">
+<meta property="og:description" content="A BCD dot clock: six columns of 8-4-2-1 dots spell HH:MM:SS. Lit dots sum to each digit.">
+<meta property="og:image" content="https://datapoems.io/clocks/binary/social-card.png">
+<meta property="og:url" content="https://datapoems.io/clocks/binary/">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Binary">
+<meta name="twitter:description" content="A BCD dot clock: six columns of 8-4-2-1 dots spell HH:MM:SS. Lit dots sum to each digit.">
+<meta name="twitter:image" content="https://datapoems.io/clocks/binary/social-card.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #060a14; --bg2: #040912; --bg-hi: #0a1322;
+    --ink: rgba(255,255,255,0.72); --dim: rgba(255,255,255,0.46);
+    --faint: rgba(255,255,255,0.30); --accent: #5cd9ff; --accent-soft: rgba(92,217,255,0.55);
+    --stage-bg: rgba(4,8,16,0.55); --stage-border: rgba(92,217,255,0.14); --stage-inset: rgba(0,0,0,0.6);
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { height: 100%; height: 100dvh; }
+  body {
+    background: radial-gradient(120% 90% at 50% 0%, var(--bg-hi) 0%, var(--bg) 45%, var(--bg2) 100%);
+    color: var(--ink); font-family: 'Atkinson Hyperlegible', ui-sans-serif, system-ui, -apple-system, sans-serif;
+    font-weight: 400; overflow: hidden; display: flex; flex-direction: column;
+    /* dvh, not vh: a 100vh min-height lays the body out taller than the
+       visible viewport on mobile, pushing the centred grid below centre */
+    min-height: 100vh; min-height: 100dvh;
+  }
+  .frame { flex: 1; display: flex; flex-direction: column; padding: clamp(14px, 2.6vw, 30px); gap: clamp(10px, 1.6vw, 18px); min-height: 0; }
+  header { display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 8px 18px; }
+  .title { font-weight: 700; font-size: clamp(13px, 1.5vw, 17px); letter-spacing: 0.42em; text-transform: uppercase; color: var(--ink); }
+  .title .mark { color: var(--accent); }
+  .sub { font-size: clamp(9px, 1vw, 11px); letter-spacing: 0.16em; color: var(--dim); text-transform: uppercase; max-width: 46ch; text-align: right; }
+  .stage {
+    position: relative; flex: 1; min-height: 0;
+    border: 1px solid var(--stage-border); background: var(--stage-bg);
+    box-shadow: inset 0 0 60px var(--stage-inset), 0 0 0 1px rgba(255,255,255,0.02); overflow: hidden;
+  }
+  canvas { display: block; width: 100%; height: 100%; }
+  .legend {
+    position: fixed; left: 50%; bottom: max(34px, calc(env(safe-area-inset-bottom) + 22px));
+    transform: translateX(-50%); z-index: 5; text-align: center;
+    pointer-events: none; max-width: calc(100% - 28px);
+    color: var(--accent-soft); font-size: 11px; letter-spacing: 0.14em;
+    text-transform: uppercase; line-height: 1.5;
+    opacity: 0; transition: opacity 0.6s ease;
+  }
+  .legend.show { opacity: 1; }
+  .footer { text-align: center; padding: 6px 0 2px; }
+  .footer a { color: rgba(255,255,255,0.35); text-decoration: none; font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; transition: color 0.25s ease; }
+  .footer a:hover, .footer a:focus { color: var(--accent-soft); }
+  /* '?' home link: the only visible chrome on the minimal page; sits above
+     the stage and themes itself through the palette custom properties */
+  .help {
+    position: fixed;
+    top: max(clamp(6px, 1.2vw, 14px), env(safe-area-inset-top));
+    right: max(clamp(6px, 1.2vw, 14px), env(safe-area-inset-right));
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 44px;
+    min-height: 44px;
+    font-family: 'Atkinson Hyperlegible', ui-sans-serif, system-ui, -apple-system, sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    line-height: 1;
+    color: var(--dim);
+    text-decoration: none;
+    background: none;
+    transition: color 0.25s ease;
+  }
+  .help:hover, .help:focus-visible { color: var(--accent); }
+  .help:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+  @media (max-width: 600px) { .sub { display: none; } .legend { font-size: 8px; } }
+  /* 10-foot / 4K legibility: bump the fixed-px chrome that the clamps cap out on */
+  @media (min-width: 1900px), (min-height: 1900px) {
+    .help { font-size: 28px; min-width: 60px; min-height: 60px; }
+    .legend { font-size: 15px; }
+  }
+  /* Full-screen minimal: hide the header and footer chrome and let the
+     clock fill the whole viewport. */
+  .frame { padding: 0; gap: 0; }
+  header, .footer { display: none; }
+  .stage { border: none; box-shadow: none; border-radius: 0; }
+</style>
+</head>
+<body>
+  <div class="frame">
+    <header>
+      <div class="title"><span class="mark">&#9673;</span>&nbsp;Binary</div>
+      <div class="sub">Six columns of 8&middot;4&middot;2&middot;1 dots &middot; lit dots sum to each digit</div>
+    </header>
+    <div class="stage">
+      <canvas id="grid" role="img" aria-label="A binary-coded-decimal clock. Six columns of dots show the digits of the 24-hour time; each column is read top to bottom as 8, 4, 2, 1, and the lit dots in a column sum to the digit printed beneath it. The exact time is announced for screen readers."></canvas>
+    </div>
+    <div class="footer"><a href="/clocks/">dr.eamer.dev / clocks</a></div>
+  </div>
+  <a class="help" href="https://lukesteuber.com" title="all the clocks" aria-label="back to the clocks gallery">?</a>
+  <div class="sr-only" aria-live="polite" id="sr">Loading clock.</div>
+
+<script>/* fail-soft storage: sandboxed embeds and blocked-cookie browsers throw on localStorage access; never let that stop a clock */window.__clockStore=(function(){try{var s=window.localStorage;s.getItem;return s;}catch(e){return{getItem:function(){return null;},setItem:function(){},removeItem:function(){}};}})();</script>
+<script>
+(function () {
+  "use strict";
+
+  var canvas = document.getElementById('grid');
+  var ctx = canvas.getContext('2d', { alpha: true });
+  var sr = document.getElementById('sr');
+
+  function pad2(n) { return n < 10 ? '0' + n : '' + n; }
+
+  var DPR = 1, W = 0, H = 0;
+  function resize() {
+    DPR = Math.min(window.devicePixelRatio || 1, 2);
+    var r = canvas.getBoundingClientRect();
+    W = Math.max(1, Math.round(r.width));
+    H = Math.max(1, Math.round(r.height));
+    canvas.width = Math.round(W * DPR);
+    canvas.height = Math.round(H * DPR);
+    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  }
+  window.addEventListener('resize', resize);
+  window.addEventListener('orientationchange', function () { requestAnimationFrame(resize); });
+
+  // --- tap-to-cycle colour themes (same interaction as dial) -------------
+  // A = accent rgb (dots, digits), N = neutral rgb (labels, unlit rings),
+  // core = the small highlight inside a lit dot. The alpha knobs exist
+  // because dark-on-light needs more contrast than glow-on-dark: Paper
+  // turns the glow off entirely and strengthens labels and unlit rings.
+  var PALETTES = [
+    { name: 'Bioluminescent', A: [92, 217, 255], N: [255, 255, 255], core: [255, 255, 255],
+      glow: 1, coreA: 0.5, unlitA: 0.12, labelA: 0.26, hmsA: 0.34,
+      vars: { '--bg': '#060a14', '--bg2': '#040912', '--bg-hi': '#0a1322',
+        '--ink': 'rgba(255,255,255,0.72)', '--dim': 'rgba(255,255,255,0.46)', '--faint': 'rgba(255,255,255,0.30)',
+        '--accent': '#5cd9ff', '--accent-soft': 'rgba(92,217,255,0.55)',
+        '--stage-bg': 'rgba(4,8,16,0.55)', '--stage-border': 'rgba(92,217,255,0.14)', '--stage-inset': 'rgba(0,0,0,0.6)' } },
+    { name: 'Sodium', A: [245, 180, 65], N: [255, 243, 220], core: [255, 255, 255],
+      glow: 1, coreA: 0.5, unlitA: 0.12, labelA: 0.26, hmsA: 0.34,
+      vars: { '--bg': '#0a0805', '--bg2': '#070503', '--bg-hi': '#181006',
+        '--ink': 'rgba(255,243,220,0.74)', '--dim': 'rgba(255,243,220,0.48)', '--faint': 'rgba(255,243,220,0.32)',
+        '--accent': '#f5b441', '--accent-soft': 'rgba(245,180,65,0.55)',
+        '--stage-bg': 'rgba(12,8,4,0.55)', '--stage-border': 'rgba(245,180,65,0.14)', '--stage-inset': 'rgba(0,0,0,0.6)' } },
+    { name: 'Neon', A: [255, 102, 204], N: [255, 236, 250], core: [255, 255, 255],
+      glow: 1, coreA: 0.5, unlitA: 0.12, labelA: 0.26, hmsA: 0.34,
+      vars: { '--bg': '#0d0518', '--bg2': '#090310', '--bg-hi': '#170a28',
+        '--ink': 'rgba(255,236,250,0.74)', '--dim': 'rgba(255,236,250,0.48)', '--faint': 'rgba(255,236,250,0.32)',
+        '--accent': '#ff66cc', '--accent-soft': 'rgba(255,102,204,0.55)',
+        '--stage-bg': 'rgba(10,4,18,0.55)', '--stage-border': 'rgba(255,102,204,0.14)', '--stage-inset': 'rgba(0,0,0,0.6)' } },
+    { name: 'Monochrome', A: [255, 255, 255], N: [255, 255, 255], core: [255, 255, 255],
+      glow: 1, coreA: 0.5, unlitA: 0.14, labelA: 0.28, hmsA: 0.36,
+      vars: { '--bg': '#000000', '--bg2': '#000000', '--bg-hi': '#101010',
+        '--ink': 'rgba(255,255,255,0.78)', '--dim': 'rgba(255,255,255,0.50)', '--faint': 'rgba(255,255,255,0.32)',
+        '--accent': '#ffffff', '--accent-soft': 'rgba(255,255,255,0.60)',
+        '--stage-bg': 'rgba(0,0,0,0.55)', '--stage-border': 'rgba(255,255,255,0.16)', '--stage-inset': 'rgba(0,0,0,0.7)' } },
+    { name: 'Paper', A: [36, 22, 18], N: [36, 22, 18], core: [243, 236, 218],
+      glow: 0, coreA: 0.55, unlitA: 0.32, labelA: 0.50, hmsA: 0.55,
+      vars: { '--bg': '#f3ecda', '--bg2': '#eae0c8', '--bg-hi': '#f9f3e4',
+        '--ink': 'rgba(36,22,18,0.80)', '--dim': 'rgba(36,22,18,0.58)', '--faint': 'rgba(36,22,18,0.42)',
+        '--accent': '#241612', '--accent-soft': 'rgba(36,22,18,0.65)',
+        '--stage-bg': 'rgba(250,245,232,0.50)', '--stage-border': 'rgba(36,22,18,0.18)', '--stage-inset': 'rgba(36,22,18,0.07)' } }
+  ];
+  var PKEY = 'binary.palette';
+  var paletteIndex = (parseInt(window.__clockStore.getItem(PKEY) || '0', 10) || 0) % PALETTES.length;
+  var PAL = PALETTES[paletteIndex];
+
+  function cy(a) { return 'rgba(' + PAL.A[0] + ',' + PAL.A[1] + ',' + PAL.A[2] + ',' + a + ')'; }
+  function nt(a) { return 'rgba(' + PAL.N[0] + ',' + PAL.N[1] + ',' + PAL.N[2] + ',' + a + ')'; }
+  function coreC(a) { return 'rgba(' + PAL.core[0] + ',' + PAL.core[1] + ',' + PAL.core[2] + ',' + a + ')'; }
+
+  // Six columns: H-tens, H-units, M-tens, M-units, S-tens, S-units.
+  // `bits` lists the place-values that column can actually take (impossible
+  // higher bits are simply not drawn (the classic binary-clock convention).
+  var COLS = [
+    { label: 'H', bits: [2, 1] },
+    { label: 'H', bits: [8, 4, 2, 1] },
+    { label: 'M', bits: [4, 2, 1] },
+    { label: 'M', bits: [8, 4, 2, 1] },
+    { label: 'S', bits: [4, 2, 1] },
+    { label: 'S', bits: [8, 4, 2, 1] }
+  ];
+  var ROWVAL = [8, 4, 2, 1];                          // top to bottom
+  var GROUP_OF = [0, 0, 1, 1, 2, 2];                  // for the small gaps between H/M/S
+
+  // Label geometry in cell units, shared by layout() and drawScene() so the
+  // vertical centring below stays true to what actually gets painted.
+  var DOT_R = 0.34;                                   // dot radius
+  var DIGIT_TOP = 0.70, DIGIT_SIZE = 0.46;            // decimal digit under each column
+  var HMS_TOP = 1.35, HMS_SIZE = 0.24;                // H / M / S group letters
+
+  // track when each dot turned on, for a brief fade-in (the only motion)
+  var lit = {};
+
+  function layout() {
+    var rows = 4;
+    var cellMax = Math.min(W / 9.5, H / 7.5);
+    var r = cellMax * DOT_R;                          // dot radius
+    var colGap = cellMax;
+    var groupGap = cellMax * 0.7;
+    // total width: 6 columns + 2 group gaps
+    var totalW = 6 * colGap + 2 * groupGap;
+    // The left value-label gutter (8 4 2 1) sits cell*GUTTER left of the first
+    // column, so the WHOLE composition is grid + gutter. Centre that, not just
+    // the dot grid, by nudging the grid right by half the gutter so the slack
+    // is equal on both sides (balanced at any aspect, including a square).
+    var GUTTER = 0.85;
+    var x0 = (W - totalW) / 2 + colGap / 2 + (GUTTER * cellMax) / 2;
+    var rowGap = cellMax;
+    var gridH = (rows - 1) * rowGap;
+    // Optical centring: the painted content runs from the top edge of the
+    // first dot (r above its row centre) down to the bottom of the H/M/S
+    // letters under the last row. Centre that whole bounding box, not just
+    // the dot grid, so the slack above and below the composition is equal.
+    var belowGrid = cellMax * (HMS_TOP + HMS_SIZE);   // labels under the grid
+    var contentH = r + gridH + belowGrid;
+    var y0 = (H - contentH) / 2 + r;                  // first row centre
+    var xs = [];
+    var x = x0;
+    for (var c = 0; c < 6; c++) {
+      if (c > 0 && GROUP_OF[c] !== GROUP_OF[c - 1]) x += groupGap;
+      xs.push(x); x += colGap;
+    }
+    return { xs: xs, y0: y0, rowGap: rowGap, r: r, cell: cellMax };
+  }
+
+  function drawScene(animate) {
+    var now = new Date();
+    var hh = now.getHours(), mm = now.getMinutes(), ss = now.getSeconds();
+    var digits = [Math.floor(hh / 10), hh % 10, Math.floor(mm / 10), mm % 10, Math.floor(ss / 10), ss % 10];
+    var L = layout();
+    var t = (typeof performance !== 'undefined' ? performance.now() : Date.now());
+    ctx.clearRect(0, 0, W, H);
+
+    // row value labels (8 4 2 1) down the left
+    ctx.font = '600 ' + Math.round(L.cell * 0.26) + 'px "JetBrains Mono", monospace';
+    ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
+    for (var ri = 0; ri < 4; ri++) {
+      ctx.fillStyle = nt(PAL.labelA);
+      ctx.fillText('' + ROWVAL[ri], L.xs[0] - L.cell * 0.85, L.y0 + ri * L.rowGap);
+    }
+
+    for (var c = 0; c < 6; c++) {
+      var col = COLS[c], digit = digits[c], cx = L.xs[c];
+      for (var b = 0; b < col.bits.length; b++) {
+        var val = col.bits[b];
+        var ri2 = ROWVAL.indexOf(val);
+        var cyc = L.y0 + ri2 * L.rowGap;
+        var on = (digit & val) !== 0;
+        var key = c + ':' + val;
+        if (on && !lit[key]) lit[key] = t;
+        if (!on) delete lit[key];
+
+        if (on) {
+          var age = animate ? Math.min(1, (t - (lit[key] || t)) / 200) : 1;  // 200ms fade-in
+          var a = 0.6 + 0.4 * age;
+          ctx.beginPath(); ctx.arc(cx, cyc, L.r, 0, Math.PI * 2);
+          ctx.fillStyle = cy(a);
+          ctx.shadowColor = cy(0.6); ctx.shadowBlur = (animate ? 12 : 8) * age * PAL.glow;
+          ctx.fill(); ctx.shadowBlur = 0;
+          ctx.beginPath(); ctx.arc(cx, cyc, L.r * 0.42, 0, Math.PI * 2);
+          ctx.fillStyle = coreC(PAL.coreA * a); ctx.fill();
+        } else {
+          ctx.beginPath(); ctx.arc(cx, cyc, L.r, 0, Math.PI * 2);
+          ctx.strokeStyle = nt(PAL.unlitA); ctx.lineWidth = 1.2; ctx.stroke();
+        }
+      }
+      // the decimal digit beneath the column (a reading aid)
+      if (window.self === window.top) {
+      ctx.fillStyle = cy(0.85);
+      ctx.font = '700 ' + Math.round(L.cell * DIGIT_SIZE) + 'px "JetBrains Mono", monospace';
+      ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+      ctx.fillText('' + digit, cx, L.y0 + 3 * L.rowGap + L.cell * DIGIT_TOP);
+      }
+      // H / M / S beneath each group's first column
+      if (c === 0 || c === 2 || c === 4) {
+        ctx.fillStyle = nt(PAL.hmsA);
+        ctx.font = '600 ' + Math.round(L.cell * HMS_SIZE) + 'px "JetBrains Mono", monospace';
+        ctx.fillText(col.label, cx + L.cell * 0.55, L.y0 + 3 * L.rowGap + L.cell * HMS_TOP);
+      }
+    }
+
+    return { hh: hh, mm: mm, ss: ss };
+  }
+
+  var lastMin = -1;
+  function updateText(t) {
+    if (t.mm !== lastMin) {
+      lastMin = t.mm;
+      sr.textContent = pad2(t.hh) + ':' + pad2(t.mm) + ' in binary-coded decimal.';
+    }
+  }
+
+  var rafId = null;
+  function loop() { var t = drawScene(true); updateText(t); rafId = requestAnimationFrame(loop); }
+  function renderStatic() { var t = drawScene(false); updateText(t); }
+  function start() {
+    if (rafId) cancelAnimationFrame(rafId);
+    rafId = requestAnimationFrame(loop);
+  }
+
+  document.addEventListener('visibilitychange', function () {
+    if (document.hidden) { if (rafId) { cancelAnimationFrame(rafId); rafId = null; } }
+    else if (!rafId) { rafId = requestAnimationFrame(loop); }
+  });
+
+  function applyPalette() {
+    PAL = PALETTES[paletteIndex];
+    var root = document.documentElement.style;
+    for (var k in PAL.vars) root.setProperty(k, PAL.vars[k]);
+    window.__clockStore.setItem(PKEY, paletteIndex.toString());
+  }
+  function cyclePalette() {
+    paletteIndex = (paletteIndex + 1) % PALETTES.length;
+    applyPalette();
+  }
+
+  // brief read-it caption: shown on load, again on tap or key, fading after a pause
+  var legend = document.getElementById('legend');
+  var legendTimer = null;
+  function flashLegend() {
+    if (!legend) return;
+    legend.classList.add('show');
+    if (legendTimer) clearTimeout(legendTimer);
+    legendTimer = setTimeout(function () { legend.classList.remove('show'); }, 5000);
+  }
+
+  (function setupInteraction() {
+    var downX = 0, downY = 0, downTime = 0, moved = false;
+    document.addEventListener('pointerdown', function (e) {
+      downX = e.clientX; downY = e.clientY;
+      downTime = performance.now();
+      moved = false;
+    });
+    document.addEventListener('pointermove', function (e) {
+      var dx = e.clientX - downX, dy = e.clientY - downY;
+      if (dx * dx + dy * dy > 36) moved = true;
+    });
+    document.addEventListener('pointerup', function (e) {
+      if (moved) return;
+      if (performance.now() - downTime > 500) return;
+      if (e.target.closest('a, button')) return;
+      cyclePalette();
+      flashLegend();
+    });
+    document.addEventListener('keydown', function (e) {
+      if (e.key === ' ' || e.key.toLowerCase() === 'p') { cyclePalette(); flashLegend(); }
+      else if (e.key === 'Enter') { e.preventDefault(); flashLegend(); }
+    });
+  })();
+  if (window.self === window.top) flashLegend();  // standalone only, not in gallery embeds
+
+  applyPalette();
+  resize();
+  start();
+})();
+</script>
+<script>window.aboutClock = {
+  title: 'Binary',
+  board: { label: 'Ciphers', href: '/clocks/numerals/' },
+  body: '<p>Every digit of the clock gets its own column of dots. Read a column top to bottom as 8, 4, 2, 1, then add up only the dots that light up. A dot lit at 8 and one at 1 makes 9. The columns are hours, then minutes, then seconds, with the plain number under each so you can check. Some columns skip dots they never need.</p>'
+      + '<p>Counting in twos like this was written down by Leibniz around 1700, though the idea is older. Stacking each digit on its own 8-4-2-1 ladder is what made early binary clocks easy to wire up.</p>'
+      + '<p>Stare at the far-right column a while: it&#39;s the seconds, and it&#39;s pretty much the only thing that ever moves.</p>'
+};</script>
+<!--inlined:about-modal.js-->
+<script>
+/* about-modal.js — a drop-in "?" explainer for a clock.
+ *
+ * Usage: set the config, then load this file (no build step, no other deps):
+ *   <script>window.aboutClock = { title: 'Maya', body: '<p>…</p>' };<\/script>
+ *   <script src="/clocks/shared/about-modal.js"><\/script>
+ *
+ * If the page already has a `.help` "?" control it upgrades that in place:
+ * clicking it opens an accessible dialog explaining the clock instead of
+ * navigating away (the original href stays as a no-JS fallback). If there is
+ * NO `.help` control, it synthesizes its own house-styled "?" button (top
+ * right) so any clock becomes self-documenting by just including the script.
+ * The synthesized button only appears in the standalone full-page view, never
+ * inside a gallery preview iframe (window.self === window.top), matching the
+ * GoatCounter gate used elsewhere.
+ *
+ * Theming: the dialog reads the page's --accent / --bg / --ink custom
+ * properties when present, falling back to the house phosphor palette.
+ */
+(function () {
+  'use strict';
+
+  var cfg = window.aboutClock;
+  if (!cfg || (!cfg.body && !(cfg.pages && cfg.pages.length))) return;
+
+  function onReady(fn) {
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', fn);
+    } else {
+      fn();
+    }
+  }
+
+  onReady(function () {
+    var trigger = document.querySelector('.help:not(.dice)') || document.querySelector('.help');
+    if (!trigger) {
+      // No "?" control on the page: synthesize one, but only in the standalone
+      // full-page view — it would be dead weight inside a gallery preview iframe.
+      if (window.self !== window.top) return;
+      var hs = document.createElement('style');
+      hs.textContent =
+        ".about-help-auto{position:fixed;top:max(.6rem,env(safe-area-inset-top));" +
+        "right:max(.6rem,env(safe-area-inset-right));z-index:30;display:flex;" +
+        "align-items:center;justify-content:center;min-width:44px;min-height:44px;" +
+        "background:none;border:none;cursor:pointer;color:var(--accent,#5cd9ff);" +
+        "opacity:.55;font:700 19px/1 'Atkinson Hyperlegible',ui-sans-serif,sans-serif;" +
+        "border-radius:6px;transition:opacity .25s ease;}" +
+        ".about-help-auto:hover,.about-help-auto:focus-visible{opacity:1;}" +
+        ".about-help-auto:focus-visible{outline:2px solid currentColor;outline-offset:3px;}";
+      document.head.appendChild(hs);
+      trigger = document.createElement('button');
+      trigger.type = 'button';
+      trigger.className = 'about-help-auto';
+      trigger.setAttribute('aria-label', 'About this clock');
+      trigger.textContent = '?';
+      document.body.appendChild(trigger);
+    }
+
+    // load the reading font (Atkinson Hyperlegible, as used across the other
+    // projects) so explanatory prose never falls back to the console mono.
+    if (!document.querySelector('link[data-about-font]')) {
+      var fl = document.createElement('link');
+      fl.rel = 'stylesheet';
+      fl.setAttribute('data-about-font', '');
+      fl.href = 'https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&display=swap';
+      document.head.appendChild(fl);
+    }
+
+    // ---- styles (injected once) ----------------------------------------
+    var css =
+      '.about-backdrop[hidden]{display:none;}' +
+      '.about-backdrop{position:fixed;inset:0;z-index:1000;display:flex;' +
+      'align-items:center;justify-content:center;padding:24px;' +
+      'background:rgba(2,5,11,0.40);backdrop-filter:blur(8px);' +
+      'opacity:0;transition:opacity .34s ease;}' +
+      '.about-backdrop[data-open]{opacity:1;}' +
+      '.about-card{position:relative;max-width:30rem;width:100%;' +
+      'max-height:calc(100vh - 48px);overflow:auto;' +
+      'background:var(--bg2, var(--bg, #060a14));' +
+      'border:1px solid rgba(150,154,168,0.18);border-radius:12px;' +
+      'box-shadow:0 18px 60px rgba(0,0,0,0.5);' +
+      'padding:26px 26px 20px;' +
+      "font-family:'Atkinson Hyperlegible', ui-sans-serif, system-ui, -apple-system, sans-serif;" +
+      'color:var(--ink, rgba(255,255,255,0.82));' +
+      'transform:translateY(10px);transition:transform .34s ease;}' +
+      '.about-backdrop[data-open] .about-card{transform:none;}' +
+      '.about-card h2{margin:0 0 12px;font-size:13px;font-weight:700;' +
+      'letter-spacing:0.34em;text-transform:uppercase;' +
+      'color:var(--accent, #5cd9ff);padding-right:32px;}' +
+      '.about-card p{margin:0 0 11px;font-size:13px;line-height:1.62;' +
+      'letter-spacing:0.01em;color:var(--ink, rgba(255,255,255,0.82));}' +
+      '.about-body a{color:var(--accent, #5cd9ff);text-decoration:underline;' +
+      'text-decoration-thickness:1px;text-underline-offset:2px;font-weight:600;' +
+      'border-radius:2px;transition:opacity .2s ease;}' +
+      '.about-body a:hover,.about-body a:focus-visible{text-decoration-thickness:2px;opacity:0.82;}' +
+      '.about-pages{display:flex;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;' +
+      '-webkit-overflow-scrolling:touch;scrollbar-width:none;margin:0 -26px;}' +
+      '.about-pages::-webkit-scrollbar{display:none;}' +
+      '.about-page{flex:0 0 100%;scroll-snap-align:center;padding:0 26px;box-sizing:border-box;}' +
+      '.about-page>:first-child{margin-top:0;}' +
+      '.about-dots{display:flex;justify-content:center;gap:9px;margin-top:18px;}' +
+      '.about-dot{width:7px;height:7px;border-radius:50%;border:none;padding:0;cursor:pointer;' +
+      'background:rgba(150,154,168,0.3);transition:background .2s, transform .2s;}' +
+      '.about-dot.on{background:var(--accent, #5cd9ff);transform:scale(1.25);}' +
+      '.about-card .about-map{margin:14px 0 4px;padding-top:13px;' +
+      'border-top:1px solid rgba(128,128,128,0.22);font-size:12px;' +
+      'line-height:1.7;color:var(--dim, rgba(255,255,255,0.52));}' +
+      '.about-card .about-map b{color:var(--accent, #5cd9ff);font-weight:600;}' +
+      '.about-foot{display:flex;justify-content:space-between;align-items:center;' +
+      'margin-top:18px;gap:10px 16px;flex-wrap:wrap;}' +
+      '.about-foot a{color:var(--accent, #5cd9ff);text-decoration:none;' +
+      'font-size:11px;letter-spacing:0.12em;text-transform:uppercase;}' +
+      '.about-foot a.about-board::before{content:"\\2039\\00a0";}' +
+      '.about-foot a:hover,.about-foot a:focus-visible{text-decoration:underline;}' +
+      '.about-close{position:absolute;top:14px;right:14px;width:32px;height:32px;' +
+      'display:flex;align-items:center;justify-content:center;cursor:pointer;' +
+      'background:none;border:none;color:var(--dim, rgba(255,255,255,0.55));' +
+      "font:700 22px/1 'Atkinson Hyperlegible', ui-sans-serif, sans-serif;border-radius:4px;}" +
+      '.about-close:hover,.about-close:focus-visible{color:var(--accent, #5cd9ff);' +
+      'outline:2px solid var(--accent, #5cd9ff);outline-offset:1px;}';
+    var style = document.createElement('style');
+    style.textContent = css;
+    document.head.appendChild(style);
+
+    // ---- dialog DOM -----------------------------------------------------
+    var backdrop = document.createElement('div');
+    backdrop.className = 'about-backdrop';
+    backdrop.hidden = true;
+
+    var card = document.createElement('div');
+    card.className = 'about-card';
+    card.setAttribute('role', 'dialog');
+    card.setAttribute('aria-modal', 'true');
+    card.setAttribute('aria-labelledby', 'about-title');
+    card.tabIndex = -1;
+
+    var titleId = 'about-title';
+    card.innerHTML =
+      '<button class="about-close" type="button" aria-label="Close">×</button>' +
+      '<h2 id="' + titleId + '"></h2>' +
+      '<div class="about-body"></div>' +
+      '<div class="about-foot">' +
+        '<a class="about-board" href="/clocks/">all clocks</a>' +
+        '<a href="https://datapoems.io">data poems</a>' +
+        '<a href="https://lukesteuber.com">about me</a>' +
+      '</div>';
+    card.querySelector('h2').textContent = cfg.title || 'About this clock';
+    var bodyEl = card.querySelector('.about-body');
+    // cfg.pages (array of HTML strings) => a horizontal snap-scroll sequence with
+    // dots, so a long modal becomes a few swipeable pages. cfg.body => one column.
+    if (cfg.pages && cfg.pages.length) {
+      var phtml = '<div class="about-pages">';
+      for (var pi = 0; pi < cfg.pages.length; pi++) phtml += '<div class="about-page">' + cfg.pages[pi] + '</div>';
+      bodyEl.innerHTML = phtml + '</div><div class="about-dots"></div>';
+      var pagesEl = bodyEl.querySelector('.about-pages');
+      var dotsEl = bodyEl.querySelector('.about-dots');
+      cfg.pages.forEach(function (_, idx) {
+        var dot = document.createElement('button');
+        dot.type = 'button';
+        dot.className = 'about-dot' + (idx === 0 ? ' on' : '');
+        dot.setAttribute('aria-label', 'Page ' + (idx + 1));
+        dot.addEventListener('click', function () {
+          pagesEl.scrollTo({ left: idx * pagesEl.clientWidth, behavior: 'smooth' });
+        });
+        dotsEl.appendChild(dot);
+      });
+      pagesEl.addEventListener('scroll', function () {
+        var idx = Math.round(pagesEl.scrollLeft / Math.max(1, pagesEl.clientWidth));
+        for (var k = 0; k < dotsEl.children.length; k++) {
+          dotsEl.children[k].className = 'about-dot' + (k === idx ? ' on' : '');
+        }
+      }, { passive: true });
+    } else {
+      bodyEl.innerHTML = cfg.body;
+    }
+    // Optional per-clock board link, e.g. { label: 'Ciphers', href: '/clocks/numerals/' }.
+    var boardLink = card.querySelector('.about-board');
+    if (cfg.board && cfg.board.href) {
+      boardLink.setAttribute('href', cfg.board.href);
+      boardLink.textContent = cfg.board.label || 'back';
+    }
+
+    backdrop.appendChild(card);
+    document.body.appendChild(backdrop);
+
+    var closeBtn = card.querySelector('.about-close');
+    var lastFocus = null;
+
+    function focusables() {
+      return Array.prototype.slice.call(
+        card.querySelectorAll('a[href], button:not([disabled])')
+      );
+    }
+
+    function open() {
+      lastFocus = document.activeElement;
+      backdrop.hidden = false;
+      // force reflow so the opacity transition runs
+      void backdrop.offsetWidth;
+      backdrop.setAttribute('data-open', '');
+      card.focus();
+      document.addEventListener('keydown', onKey, true);
+    }
+
+    function close() {
+      backdrop.removeAttribute('data-open');
+      document.removeEventListener('keydown', onKey, true);
+      setTimeout(function () { backdrop.hidden = true; }, 200);
+      if (lastFocus && lastFocus.focus) lastFocus.focus();
+    }
+
+    function onKey(e) {
+      if (e.key === 'Escape') { e.preventDefault(); close(); return; }
+      if (e.key === 'Tab') {
+        var f = focusables();
+        if (!f.length) return;
+        var first = f[0], last = f[f.length - 1];
+        if (e.shiftKey && document.activeElement === first) {
+          e.preventDefault(); last.focus();
+        } else if (!e.shiftKey && document.activeElement === last) {
+          e.preventDefault(); first.focus();
+        }
+      }
+    }
+
+    backdrop.addEventListener('click', function (e) {
+      if (e.target === backdrop) close();
+    });
+    closeBtn.addEventListener('click', close);
+
+    // upgrade the "?" trigger to open the dialog (keep href as fallback).
+    // Relabel it: the original markup often labelled this control for its old
+    // job (a link to the gallery or my site), which is now misleading once it
+    // opens the explainer dialog. Name it for what it actually does.
+    trigger.setAttribute('role', 'button');
+    trigger.setAttribute('aria-haspopup', 'dialog');
+    trigger.setAttribute('aria-label', cfg.title ? 'About the ' + cfg.title + ' clock' : 'About this clock');
+    trigger.addEventListener('click', function (e) {
+      e.preventDefault();
+      open();
+    });
+  });
+})();
+</script>
+<!--/inlined:about-modal.js-->
+<script>/* only count real visits, not gallery previews in an iframe */
+if (window.self === window.top) {
+  var g = document.createElement("script"); g.async = true;
+  g.setAttribute("data-goatcounter", "https://stats.dr.eamer.dev/count");
+  g.src = "https://stats.dr.eamer.dev/count.js";
+  document.body.appendChild(g);
+}</script>
+</body>
+</html>

@@ -1,0 +1,391 @@
+<!doctype html>
+<!--
+  Yautja: Local time in Yautja (Predator) numerals: each digit of the hour, minute and second struck as that many glowing dashe…
+  A clock from Luke Steuber's gallery: https://datapoems.io/clocks/yautja/
+  Author: Luke Steuber · lukesteuber.com · @lukesteuber.com (Bluesky)
+  Copyright 2026 Luke Steuber. MIT License. Reuse freely, keep this credit.
+  Libraries loaded from a CDN (if any) keep their own licenses.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Yautja</title>
+<meta name="description" content="Local time in Yautja (Predator) numerals: each digit of the hour, minute and second struck as that many glowing dashes, the bio-helmet script of the hunters. The exact time is shown and announced.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Yautja">
+<meta property="og:description" content="Local time in Yautja (Predator) numerals: each digit a count of glowing dashes, the hunters' bio-helmet script.">
+<meta property="og:url" content="https://datapoems.io/clocks/yautja/">
+<meta property="og:image" content="https://datapoems.io/clocks/yautja/social-card.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Yautja">
+<meta name="twitter:description" content="Local time in Yautja (Predator) numerals: each digit a count of glowing dashes.">
+<meta name="twitter:image" content="https://datapoems.io/clocks/yautja/social-card.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  :root { --accent: #f5b441; --bg: #0a0702; --bg2: #160f04; --ink: rgba(255,240,212,0.86); }
+  html, body { width: 100%; height: 100%; background: var(--bg); overflow: hidden; font-family: 'JetBrains Mono', ui-monospace, monospace; }
+  #scene { position: fixed; inset: 0; width: 100%; height: 100%; display: block; }
+  .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+</style>
+</head>
+<body>
+  <canvas id="scene" role="img"
+    aria-label="The current local time in Yautja (Predator) numerals. The hour, minute and second are each two digits, and every digit is struck as that many glowing angled dashes, the bio-helmet script of the hunters; zero is a single dot. The exact time is shown beneath and announced once a minute."></canvas>
+  <div class="sr-only" id="sr" aria-live="polite">Loading clock.</div>
+
+<script>
+(function () {
+  "use strict";
+  var canvas = document.getElementById('scene');
+  var ctx = canvas.getContext('2d');
+  var sr = document.getElementById('sr');
+  var embedded = (window.self !== window.top);
+  var ACCENT = '#f5b441';
+  function pad2(n) { return n < 10 ? '0' + n : '' + n; }
+
+  var DPR = 1, W = 0, H = 0;
+  function resize() {
+    DPR = Math.min(window.devicePixelRatio || 1, 2);
+    var r = canvas.getBoundingClientRect();
+    W = Math.max(1, Math.round(r.width)); H = Math.max(1, Math.round(r.height));
+    canvas.width = Math.round(W * DPR); canvas.height = Math.round(H * DPR);
+    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  }
+  window.addEventListener('resize', resize);
+  window.addEventListener('orientationchange', function () { requestAnimationFrame(resize); });
+
+  // one digit: `d` glowing angled dashes stacked in a column; zero is a single dot.
+  function digit(cx, cy, d, u, lw) {
+    ctx.strokeStyle = ACCENT; ctx.lineCap = 'round'; ctx.lineWidth = lw;
+    ctx.shadowColor = 'rgba(245,180,65,0.7)'; ctx.shadowBlur = u * 0.4;
+    if (d === 0) {
+      ctx.fillStyle = ACCENT;
+      ctx.beginPath(); ctx.arc(cx, cy, lw * 0.9, 0, Math.PI * 2); ctx.fill();
+      ctx.shadowBlur = 0; return;
+    }
+    var rows = Math.min(d, 5), cols = d > 5 ? 2 : 1;
+    var dh = u * 0.3, dw = u * 0.5, lean = u * 0.12;
+    var n = 0;
+    for (var c = 0; c < cols && n < d; c++) {
+      var x = cx + (cols === 2 ? (c - 0.5) * u * 0.62 : 0);
+      var cnt = (c === 0) ? Math.min(d, 5) : d - 5;
+      for (var i = 0; i < cnt; i++) {
+        var y = cy - (cnt - 1) * dh / 2 + i * dh;
+        ctx.beginPath(); ctx.moveTo(x - dw / 2, y + lean); ctx.lineTo(x + dw / 2, y - lean); ctx.stroke();
+        n++;
+      }
+    }
+    ctx.shadowBlur = 0;
+  }
+
+  var lastSR = -1;
+  function tick() {
+    var now = new Date();
+    var h = now.getHours(), m = now.getMinutes(), s = now.getSeconds();
+    ctx.fillStyle = '#0a0702'; ctx.fillRect(0, 0, W, H);
+
+    var digs = [Math.floor(h/10), h%10, Math.floor(m/10), m%10, Math.floor(s/10), s%10];
+    var readout = pad2(h) + ' : ' + pad2(m) + ' : ' + pad2(s);
+    ctx.fillStyle = 'rgba(255,240,212,0.42)';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+
+    if (H > W * 1.05) {
+      // portrait: three stacked rows, hours over minutes over seconds
+      var u = Math.min(W * 0.2, H * 0.115);
+      var colGap = u * 1.6, rowGap = u * 2.5, cx = W / 2;
+      var cyMid = H / 2 - (embedded ? u * 0.1 : u * 0.8);
+      var lw = Math.max(2.5, u * 0.1);
+      for (var r = 0; r < 3; r++) {
+        var y = cyMid + (r - 1) * rowGap;
+        digit(cx - colGap / 2, y, digs[r * 2], u, lw);
+        digit(cx + colGap / 2, y, digs[r * 2 + 1], u, lw);
+      }
+      if (!embedded) {
+        ctx.font = '600 ' + Math.max(13, Math.round(u * 0.32)) + 'px "JetBrains Mono", monospace';
+        ctx.fillText(readout, cx, cyMid + rowGap + u * 1.5);
+      }
+    } else {
+      // landscape: one row of six digits
+      var u = Math.min(W * 0.085, H * 0.26);
+      var cell = u * 0.95, gap = u * 0.7;
+      var totalW = 6 * cell + 2 * gap;
+      var x = W / 2 - totalW / 2 + cell / 2;
+      var cy = H / 2 - (embedded ? 0 : u * 0.55);
+      var lw = Math.max(2.5, u * 0.1);
+      for (var i = 0; i < 6; i++) {
+        digit(x, cy, digs[i], u, lw);
+        x += cell;
+        if (i === 1 || i === 3) x += gap;
+      }
+      if (!embedded) {
+        ctx.font = '600 ' + Math.max(13, Math.round(u * 0.36)) + 'px "JetBrains Mono", monospace';
+        ctx.fillText(readout, W / 2, cy + u * 1.35);
+      }
+    }
+
+    if (m !== lastSR) { lastSR = m; sr.textContent = pad2(h) + ':' + pad2(m) + ' local time, in Yautja numerals.'; }
+    requestAnimationFrame(tick);
+  }
+  resize(); tick();
+})();
+</script>
+<script>window.aboutClock = {
+  title: 'Yautja',
+  board: { label: 'Ciphers', href: '/clocks/numerals/' },
+  body: '<p>The Yautja, the dreadlocked alien hunters of the Predator films, carry their own script, glowing dash-marks on their bio-helmets and gauntlets. This clock writes the time in that style.</p>'
+      + '<p>Each digit is struck as that many angled glowing dashes, stacked, with a single dot for zero. Six digits give the hours, minutes and seconds; the plain time reads underneath.</p>'
+      + '<p>The hunters’ numerals work in tens like ours, but they tally rather than use ten separate signs, so a number is simply how many marks you count.</p>'
+};</script>
+<!--inlined:about-modal.js-->
+<script>
+/* about-modal.js — a drop-in "?" explainer for a clock.
+ *
+ * Usage: set the config, then load this file (no build step, no other deps):
+ *   <script>window.aboutClock = { title: 'Maya', body: '<p>…</p>' };<\/script>
+ *   <script src="/clocks/shared/about-modal.js"><\/script>
+ *
+ * If the page already has a `.help` "?" control it upgrades that in place:
+ * clicking it opens an accessible dialog explaining the clock instead of
+ * navigating away (the original href stays as a no-JS fallback). If there is
+ * NO `.help` control, it synthesizes its own house-styled "?" button (top
+ * right) so any clock becomes self-documenting by just including the script.
+ * The synthesized button only appears in the standalone full-page view, never
+ * inside a gallery preview iframe (window.self === window.top), matching the
+ * GoatCounter gate used elsewhere.
+ *
+ * Theming: the dialog reads the page's --accent / --bg / --ink custom
+ * properties when present, falling back to the house phosphor palette.
+ */
+(function () {
+  'use strict';
+
+  var cfg = window.aboutClock;
+  if (!cfg || (!cfg.body && !(cfg.pages && cfg.pages.length))) return;
+
+  function onReady(fn) {
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', fn);
+    } else {
+      fn();
+    }
+  }
+
+  onReady(function () {
+    var trigger = document.querySelector('.help:not(.dice)') || document.querySelector('.help');
+    if (!trigger) {
+      // No "?" control on the page: synthesize one, but only in the standalone
+      // full-page view — it would be dead weight inside a gallery preview iframe.
+      if (window.self !== window.top) return;
+      var hs = document.createElement('style');
+      hs.textContent =
+        ".about-help-auto{position:fixed;top:max(.6rem,env(safe-area-inset-top));" +
+        "right:max(.6rem,env(safe-area-inset-right));z-index:30;display:flex;" +
+        "align-items:center;justify-content:center;min-width:44px;min-height:44px;" +
+        "background:none;border:none;cursor:pointer;color:var(--accent,#5cd9ff);" +
+        "opacity:.55;font:700 19px/1 'Atkinson Hyperlegible',ui-sans-serif,sans-serif;" +
+        "border-radius:6px;transition:opacity .25s ease;}" +
+        ".about-help-auto:hover,.about-help-auto:focus-visible{opacity:1;}" +
+        ".about-help-auto:focus-visible{outline:2px solid currentColor;outline-offset:3px;}";
+      document.head.appendChild(hs);
+      trigger = document.createElement('button');
+      trigger.type = 'button';
+      trigger.className = 'about-help-auto';
+      trigger.setAttribute('aria-label', 'About this clock');
+      trigger.textContent = '?';
+      document.body.appendChild(trigger);
+    }
+
+    // load the reading font (Atkinson Hyperlegible, as used across the other
+    // projects) so explanatory prose never falls back to the console mono.
+    if (!document.querySelector('link[data-about-font]')) {
+      var fl = document.createElement('link');
+      fl.rel = 'stylesheet';
+      fl.setAttribute('data-about-font', '');
+      fl.href = 'https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&display=swap';
+      document.head.appendChild(fl);
+    }
+
+    // ---- styles (injected once) ----------------------------------------
+    var css =
+      '.about-backdrop[hidden]{display:none;}' +
+      '.about-backdrop{position:fixed;inset:0;z-index:1000;display:flex;' +
+      'align-items:center;justify-content:center;padding:24px;' +
+      'background:rgba(2,5,11,0.40);backdrop-filter:blur(8px);' +
+      'opacity:0;transition:opacity .34s ease;}' +
+      '.about-backdrop[data-open]{opacity:1;}' +
+      '.about-card{position:relative;max-width:30rem;width:100%;' +
+      'max-height:calc(100vh - 48px);overflow:auto;' +
+      'background:var(--bg2, var(--bg, #060a14));' +
+      'border:1px solid rgba(150,154,168,0.18);border-radius:12px;' +
+      'box-shadow:0 18px 60px rgba(0,0,0,0.5);' +
+      'padding:26px 26px 20px;' +
+      "font-family:'Atkinson Hyperlegible', ui-sans-serif, system-ui, -apple-system, sans-serif;" +
+      'color:var(--ink, rgba(255,255,255,0.82));' +
+      'transform:translateY(10px);transition:transform .34s ease;}' +
+      '.about-backdrop[data-open] .about-card{transform:none;}' +
+      '.about-card h2{margin:0 0 12px;font-size:13px;font-weight:700;' +
+      'letter-spacing:0.34em;text-transform:uppercase;' +
+      'color:var(--accent, #5cd9ff);padding-right:32px;}' +
+      '.about-card p{margin:0 0 11px;font-size:13px;line-height:1.62;' +
+      'letter-spacing:0.01em;color:var(--ink, rgba(255,255,255,0.82));}' +
+      '.about-body a{color:var(--accent, #5cd9ff);text-decoration:underline;' +
+      'text-decoration-thickness:1px;text-underline-offset:2px;font-weight:600;' +
+      'border-radius:2px;transition:opacity .2s ease;}' +
+      '.about-body a:hover,.about-body a:focus-visible{text-decoration-thickness:2px;opacity:0.82;}' +
+      '.about-pages{display:flex;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;' +
+      '-webkit-overflow-scrolling:touch;scrollbar-width:none;margin:0 -26px;}' +
+      '.about-pages::-webkit-scrollbar{display:none;}' +
+      '.about-page{flex:0 0 100%;scroll-snap-align:center;padding:0 26px;box-sizing:border-box;}' +
+      '.about-page>:first-child{margin-top:0;}' +
+      '.about-dots{display:flex;justify-content:center;gap:9px;margin-top:18px;}' +
+      '.about-dot{width:7px;height:7px;border-radius:50%;border:none;padding:0;cursor:pointer;' +
+      'background:rgba(150,154,168,0.3);transition:background .2s, transform .2s;}' +
+      '.about-dot.on{background:var(--accent, #5cd9ff);transform:scale(1.25);}' +
+      '.about-card .about-map{margin:14px 0 4px;padding-top:13px;' +
+      'border-top:1px solid rgba(128,128,128,0.22);font-size:12px;' +
+      'line-height:1.7;color:var(--dim, rgba(255,255,255,0.52));}' +
+      '.about-card .about-map b{color:var(--accent, #5cd9ff);font-weight:600;}' +
+      '.about-foot{display:flex;justify-content:space-between;align-items:center;' +
+      'margin-top:18px;gap:10px 16px;flex-wrap:wrap;}' +
+      '.about-foot a{color:var(--accent, #5cd9ff);text-decoration:none;' +
+      'font-size:11px;letter-spacing:0.12em;text-transform:uppercase;}' +
+      '.about-foot a.about-board::before{content:"\\2039\\00a0";}' +
+      '.about-foot a:hover,.about-foot a:focus-visible{text-decoration:underline;}' +
+      '.about-close{position:absolute;top:14px;right:14px;width:32px;height:32px;' +
+      'display:flex;align-items:center;justify-content:center;cursor:pointer;' +
+      'background:none;border:none;color:var(--dim, rgba(255,255,255,0.55));' +
+      "font:700 22px/1 'Atkinson Hyperlegible', ui-sans-serif, sans-serif;border-radius:4px;}" +
+      '.about-close:hover,.about-close:focus-visible{color:var(--accent, #5cd9ff);' +
+      'outline:2px solid var(--accent, #5cd9ff);outline-offset:1px;}';
+    var style = document.createElement('style');
+    style.textContent = css;
+    document.head.appendChild(style);
+
+    // ---- dialog DOM -----------------------------------------------------
+    var backdrop = document.createElement('div');
+    backdrop.className = 'about-backdrop';
+    backdrop.hidden = true;
+
+    var card = document.createElement('div');
+    card.className = 'about-card';
+    card.setAttribute('role', 'dialog');
+    card.setAttribute('aria-modal', 'true');
+    card.setAttribute('aria-labelledby', 'about-title');
+    card.tabIndex = -1;
+
+    var titleId = 'about-title';
+    card.innerHTML =
+      '<button class="about-close" type="button" aria-label="Close">×</button>' +
+      '<h2 id="' + titleId + '"></h2>' +
+      '<div class="about-body"></div>' +
+      '<div class="about-foot">' +
+        '<a class="about-board" href="/clocks/">all clocks</a>' +
+        '<a href="https://datapoems.io">data poems</a>' +
+        '<a href="https://lukesteuber.com">about me</a>' +
+      '</div>';
+    card.querySelector('h2').textContent = cfg.title || 'About this clock';
+    var bodyEl = card.querySelector('.about-body');
+    // cfg.pages (array of HTML strings) => a horizontal snap-scroll sequence with
+    // dots, so a long modal becomes a few swipeable pages. cfg.body => one column.
+    if (cfg.pages && cfg.pages.length) {
+      var phtml = '<div class="about-pages">';
+      for (var pi = 0; pi < cfg.pages.length; pi++) phtml += '<div class="about-page">' + cfg.pages[pi] + '</div>';
+      bodyEl.innerHTML = phtml + '</div><div class="about-dots"></div>';
+      var pagesEl = bodyEl.querySelector('.about-pages');
+      var dotsEl = bodyEl.querySelector('.about-dots');
+      cfg.pages.forEach(function (_, idx) {
+        var dot = document.createElement('button');
+        dot.type = 'button';
+        dot.className = 'about-dot' + (idx === 0 ? ' on' : '');
+        dot.setAttribute('aria-label', 'Page ' + (idx + 1));
+        dot.addEventListener('click', function () {
+          pagesEl.scrollTo({ left: idx * pagesEl.clientWidth, behavior: 'smooth' });
+        });
+        dotsEl.appendChild(dot);
+      });
+      pagesEl.addEventListener('scroll', function () {
+        var idx = Math.round(pagesEl.scrollLeft / Math.max(1, pagesEl.clientWidth));
+        for (var k = 0; k < dotsEl.children.length; k++) {
+          dotsEl.children[k].className = 'about-dot' + (k === idx ? ' on' : '');
+        }
+      }, { passive: true });
+    } else {
+      bodyEl.innerHTML = cfg.body;
+    }
+    // Optional per-clock board link, e.g. { label: 'Ciphers', href: '/clocks/numerals/' }.
+    var boardLink = card.querySelector('.about-board');
+    if (cfg.board && cfg.board.href) {
+      boardLink.setAttribute('href', cfg.board.href);
+      boardLink.textContent = cfg.board.label || 'back';
+    }
+
+    backdrop.appendChild(card);
+    document.body.appendChild(backdrop);
+
+    var closeBtn = card.querySelector('.about-close');
+    var lastFocus = null;
+
+    function focusables() {
+      return Array.prototype.slice.call(
+        card.querySelectorAll('a[href], button:not([disabled])')
+      );
+    }
+
+    function open() {
+      lastFocus = document.activeElement;
+      backdrop.hidden = false;
+      // force reflow so the opacity transition runs
+      void backdrop.offsetWidth;
+      backdrop.setAttribute('data-open', '');
+      card.focus();
+      document.addEventListener('keydown', onKey, true);
+    }
+
+    function close() {
+      backdrop.removeAttribute('data-open');
+      document.removeEventListener('keydown', onKey, true);
+      setTimeout(function () { backdrop.hidden = true; }, 200);
+      if (lastFocus && lastFocus.focus) lastFocus.focus();
+    }
+
+    function onKey(e) {
+      if (e.key === 'Escape') { e.preventDefault(); close(); return; }
+      if (e.key === 'Tab') {
+        var f = focusables();
+        if (!f.length) return;
+        var first = f[0], last = f[f.length - 1];
+        if (e.shiftKey && document.activeElement === first) {
+          e.preventDefault(); last.focus();
+        } else if (!e.shiftKey && document.activeElement === last) {
+          e.preventDefault(); first.focus();
+        }
+      }
+    }
+
+    backdrop.addEventListener('click', function (e) {
+      if (e.target === backdrop) close();
+    });
+    closeBtn.addEventListener('click', close);
+
+    // upgrade the "?" trigger to open the dialog (keep href as fallback).
+    // Relabel it: the original markup often labelled this control for its old
+    // job (a link to the gallery or my site), which is now misleading once it
+    // opens the explainer dialog. Name it for what it actually does.
+    trigger.setAttribute('role', 'button');
+    trigger.setAttribute('aria-haspopup', 'dialog');
+    trigger.setAttribute('aria-label', cfg.title ? 'About the ' + cfg.title + ' clock' : 'About this clock');
+    trigger.addEventListener('click', function (e) {
+      e.preventDefault();
+      open();
+    });
+  });
+})();
+</script>
+<!--/inlined:about-modal.js-->
+<script>if (window.self === window.top) { var g=document.createElement("script"); g.async=true; g.setAttribute("data-goatcounter","https://stats.dr.eamer.dev/count"); g.src="https://stats.dr.eamer.dev/count.js"; document.body.appendChild(g); }</script>
+</body>
+</html>
