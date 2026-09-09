@@ -2,6 +2,7 @@
 art:
 	node tools/generate-art.cjs
 	python3 tools/pack-art.py
+	python3 tools/generate-previews.py
 test:
 	mkdir -p build
 	clang -std=c11 -Wall -Wextra -Werror -fsanitize=address,undefined test/model.c src/c/model.c -o build/model-test

@@ -9,3 +9,39 @@ test('offline attempts bounded',()=>{let h=harness();h.api.choose({system:2,seco
 test('configuration contains all systems and reading guides',()=>{let h=harness();h.handlers.showConfiguration();let page=decodeURIComponent(h.urls[0].split(',').slice(1).join(','));assert.match(page,/Yautja/);assert.match(page,/Braille/);assert.match(page,/Hours and minutes/);assert.match(page,/source’s decimal adaptation/)});
 
 test("missing watch acknowledgement retries without claiming saved",()=>{let h=harness();h.api.choose({system:8,seconds:0});for(let i=0;i<4;i++){h.sent[i].ok();if(h.timers[i])h.timers[i]();}assert.equal(h.sent.length,4);assert.equal(Object.keys(h.storage).length,0)});
+
+const pageFor=require('../src/pkjs/settings-page');
+const systems=require('../systems.json');
+const nativeSamples=require('../reference/settings-previews/manifest.json');
+function webview(page) {
+ const elements={};
+ for(const id of ['system','seconds']) {
+  const options=page.match(new RegExp('<select id="'+id+'">([\\s\\S]*?)</select>'))[1];
+  elements[id]={value:options.match(/<option value="(\d+)" selected>/)[1]};
+ }
+ for(const id of ['preview','caption','guide','save'])elements[id]={};
+ const location={href:''};
+ vm.runInNewContext(page.match(/<script>([\s\S]*?)<\/script>/)[1],{document:{getElementById:id=>elements[id]},location});
+ return {elements,location};
+}
+for(const platform of ['basalt','diorite','emery','flint'])test(platform+' previews match all 58 native samples before saving',()=>{
+ const page=pageFor({system:8,seconds:0},platform),w=webview(page),e=w.elements;
+ assert.match(e.preview.alt,/Kaktovik, 2 rows, showing 10:08/);
+ assert.ok(('data:text/html;charset=utf-8,'+encodeURIComponent(page)).length<160000,'Keep each offline settings URL bounded');
+ for(const row of systems)for(const seconds of [0,1]) {
+  e.system.value=String(row.id);e.system.onchange();e.seconds.value=String(seconds);e.seconds.onchange();
+  const sample=nativeSamples.frames.find(x=>x.platform===platform&&x.system===row.id&&x.seconds===seconds);
+  const png=Buffer.from(e.preview.src.split(',')[1],'base64');
+  assert.deepEqual(png,fs.readFileSync(path.join(__dirname,'../reference/settings-previews',sample.file)));
+  assert.equal(e.guide.textContent,row.guide);
+  assert.equal(e.preview.alt,row.name+', '+(seconds?3:2)+' '+row.layout+', showing '+(seconds?'23:59:59':'10:08'));
+  assert.equal(e.caption.textContent,'Example · '+(seconds?'23:59:59':'10:08'));
+  assert.equal(w.location.href,'','Browsing must not save');
+ }
+ e.save.onclick();assert.deepEqual(JSON.parse(decodeURIComponent(w.location.href.split('#')[1])),{system:28,seconds:1});
+});
+test('unknown watch uses a labeled color preview',()=>{
+ const w=webview(pageFor({system:9,seconds:1},'unknown'));
+ assert.match(w.elements.preview.alt,/Maya, 3 columns/);
+ assert.match(w.elements.caption.textContent,/color screen/);
+});

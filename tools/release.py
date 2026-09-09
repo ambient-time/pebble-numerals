@@ -15,13 +15,13 @@ with tempfile.TemporaryDirectory(prefix='numerals-portable-') as directory:
  work=Path(directory)
  with zipfile.ZipFile(source) as archive:archive.extractall(work)
  with (release/'independent-build.log').open('w') as log:
-  for command in [['npm','ci','--ignore-scripts'],['make','art'],['make','test'],['pebble','build','--sdk','4.33.1']]:subprocess.run(command,cwd=work,stdout=log,stderr=subprocess.STDOUT,check=True)
- generated=[*ROOT.glob('resources/*.bin'),ROOT/'src/c/styles.h',ROOT/'src/pkjs/systems.js']
+  for command in [['npm','ci','--ignore-scripts'],['make','art'],['make','test'],['pebble','build','--sdk','4.33.1'],['node','tools/test-phone-bundle.cjs']]:subprocess.run(command,cwd=work,stdout=log,stderr=subprocess.STDOUT,check=True)
+ generated=[*ROOT.glob('resources/*.bin'),ROOT/'src/c/styles.h',ROOT/'src/pkjs/systems.js',ROOT/'src/pkjs/previews.js']
  assert all(sha(p)==sha(work/p.relative_to(ROOT)) for p in generated),'Regenerated artwork or settings drifted'
  with zipfile.ZipFile(pbw) as frozen,zipfile.ZipFile(next((work/'build').glob('*.pbw'))) as rebuilt:
   names=[n for n in frozen.namelist() if n.endswith('app_resources.pbpack') or n.endswith('pebble-js-app.js')]
   assert names and all(frozen.read(n)==rebuilt.read(n) for n in names),'Portable resource/phone bundle differs'
- report={'sourceSHA256':sha(source),'pbwSHA256':sha(pbw),'archiveBuiltOutsideCheckout':True,'all1740SignsRegenerated':True,'generatedResourcesAndSettingsMatch':True,'resourceAndPhoneBundlesMatch':True,'targets':['basalt','diorite','emery','flint'],'sourceFiles':len(files),'limitations':'Local archive build; not a CloudPebble build, store upload or physical-watch test.'}
+ report={'sourceSHA256':sha(source),'pbwSHA256':sha(pbw),'archiveBuiltOutsideCheckout':True,'all1740SignsRegenerated':True,'generatedResourcesAndSettingsMatch':True,'resourceAndPhoneBundlesMatch':True,'compiledPhonePreviewStatesChecked':232,'targets':['basalt','diorite','emery','flint'],'sourceFiles':len(files),'limitations':'Local archive build; not a CloudPebble build, store upload or physical-watch test.'}
  (release/'independent-build.json').write_text(json.dumps(report,indent=2)+'\n')
-(release/'SHA256SUMS').write_text(''.join(sha(p)+'  '+p.name+'\n' for p in [pbw,source]))
+(release/'SHA256SUMS').write_text(''.join(sha(p)+'  '+p.name+'\n' for p in sorted([*release.glob('numerals-*.pbw'),*release.glob('numerals-*-source.zip')])))
 print(json.dumps(report,indent=2))
