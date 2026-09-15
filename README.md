@@ -1,6 +1,8 @@
 # Numerals
 
-One rectangular Pebble face with a saved choice of numeral system. Roman is the default. Hours, minutes and optional seconds use each system’s own signs and reading direction. Two-part mode updates each minute; three-part mode updates each second. Existing standalone faces keep their own identities.
+Twenty-nine ways to write the time on a rectangular Pebble. Choose a numeral system in phone settings; the watch remembers it. Roman is the default. Hours, minutes and optional seconds use each system’s own signs and reading direction. Two-part mode updates each minute; three-part mode updates each second. Existing standalone faces keep their own identities.
+
+[![Get Numerals](https://img.shields.io/badge/Pebble-Get_Numerals-2563eb?style=flat-square)](https://apps.repebble.com/8b3f12056e9d4aa0882a9a3e) [![MIT code license](https://img.shields.io/badge/Code-MIT-181717?style=flat-square)](LICENSE) [![Ambient Time collection](https://img.shields.io/badge/Ambient_Time-Collection-181717?style=flat-square)](https://ambient-time.com/watch/pebble/)
 
 Design by Luke Steuber for Ambient Time.
 
@@ -29,8 +31,15 @@ make build
 
 The source collection is [Systems of Representation](https://datapoems.io/clocks/numerals/). `systems.json` records the stable IDs, source URLs, hashes and guides. `reference/` freezes the source pages; `reference/live-source-check.json` records their exact match to the live pages. Fonts and their licenses are in `reference/fonts/`. The artwork generator verifies source and font hashes before running.
 
-Source glyphs become compact monochrome silhouettes, with a per-system foreground/background palette on color watches. Paper textures, glows and decorative shading are omitted. Values remain local hours, minutes and seconds. Geometry scales uniformly. Dense tally values wrap after six groups of five; Aztec dots wrap after five dots. Aegean marks have clear gaps. The compact binary-family choices use filled and hollow circles, with their different place values explained in settings. Stable system IDs are append-only. No auxiliary decimal clock or face labels are part of the design.
+The source signs become compact monochrome shapes, with a palette for each system on color watches. Paper textures, glows and decorative shading are omitted. Values remain local hours, minutes and seconds. Geometry scales uniformly. Dense tally values wrap after six groups of five; Aztec dots wrap after five dots. Aegean marks have clear gaps. The compact binary-family choices use filled and hollow circles, with their different place values explained in settings. Stable system IDs are append-only. No auxiliary decimal clock or face labels are part of the design.
 
 ## License
 
 Luke Steuber’s code and reference clock implementations use the [MIT License](LICENSE). Bundled fonts retain their own licenses; see [Third-party notices](THIRD_PARTY_NOTICES.md).
+
+## Around here
+
+[Luke Steuber](https://github.com/lukeslp) · [Data Poems](https://github.com/data-poems) · [Ambient Time](https://github.com/ambient-time) · [Actually Useful AI](https://github.com/actually-useful-ai) · [One Impossible Thing](https://github.com/one-impossible-thing)
+
+Made by [Luke Steuber](https://lukesteuber.com). Questions or collaboration:
+[luke@lukesteuber.com](mailto:luke@lukesteuber.com).
