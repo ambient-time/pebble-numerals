@@ -10,7 +10,7 @@ Open Numerals settings in the Pebble phone app. Choose a numeral system and eith
 
 The watch keeps the selection across restarts and tells time without a phone connection. The phone stores a change only after the watch confirms it. Failed delivery retries briefly; reconnect and save again if the watch does not change. No location, account or network data feed is needed.
 
-Numerals 0.1.1 targets Basalt, Diorite, Emery and Flint. The frozen PBW and portable source ZIP are in `release/`; `evidence/index.html` lets you inspect every choice on every target in both modes. Native emulator checks are separate from physical-watch readability, battery life and real-phone delivery, which remain unverified. See `release/publication.json` in the main project for the current store receipt.
+Numerals 0.1.1 targets Basalt, Diorite, Emery and Flint. Install the published face from the [Pebble Appstore](https://apps.repebble.com/8b3f12056e9d4aa0882a9a3e), or build from this repository. Release archives and emulator evidence are generated locally and are not included in this source checkout. Native emulator checks are separate from physical-watch readability, battery life and real-phone delivery, which remain unverified.
 
 ### Build and verification
 
@@ -30,3 +30,7 @@ make build
 The source collection is [Systems of Representation](https://datapoems.io/clocks/numerals/). `systems.json` records the stable IDs, source URLs, hashes and guides. `reference/` freezes the source pages; `reference/live-source-check.json` records their exact match to the live pages. Fonts and their licenses are in `reference/fonts/`. The artwork generator verifies source and font hashes before running.
 
 Source glyphs become compact monochrome silhouettes, with a per-system foreground/background palette on color watches. Paper textures, glows and decorative shading are omitted. Values remain local hours, minutes and seconds. Geometry scales uniformly. Dense tally values wrap after six groups of five; Aztec dots wrap after five dots. Aegean marks have clear gaps. The compact binary-family choices use filled and hollow circles, with their different place values explained in settings. Stable system IDs are append-only. No auxiliary decimal clock or face labels are part of the design.
+
+## License
+
+Luke Steuber’s code and reference clock implementations use the [MIT License](LICENSE). Bundled fonts retain their own licenses; see [Third-party notices](THIRD_PARTY_NOTICES.md).

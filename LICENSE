@@ -19,13 +19,3 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
-
----
-
-Third-party components keep their own licenses and are NOT relicensed by this
-file. The clocks load some libraries from a CDN at runtime (not bundled):
-three.js (MIT), @vfx-js/core (MIT, by Amagi), roughjs (MIT), d3 (ISC), and
-Google Fonts (OFL 1.1). Two clocks adapt third-party shaders, credited in the
-file: liquid-glass (VFX-JS liquid-glass effect by Amagi, MIT) and refract
-(Ksenia Kondrashova's "Broken Glass Effect"). Astronomical clocks use standard
-algorithms (e.g. Jean Meeus). Keep those credits intact when reusing.

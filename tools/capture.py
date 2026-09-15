@@ -15,7 +15,7 @@ from pebble_tool.commands.emucontrol import send_data_to_qemu
 import pebble_tool.sdk.emulator as emulator
 
 def run(platform):
- pbw=ROOT/'build/numerals.pbw';digest=hashlib.sha256(pbw.read_bytes()).hexdigest();pkg=json.loads((ROOT/'package.json').read_text());app=UUID(pkg['pebble']['uuid']);systems=json.loads((ROOT/'systems.json').read_text());out=ROOT/'build/evidence';out.mkdir(exist_ok=True);state=Path(tempfile.mkdtemp(prefix='numerals-'+platform+'-',dir=ROOT/'build'))
+ pbw=ROOT/'build'/f'{ROOT.name}.pbw';digest=hashlib.sha256(pbw.read_bytes()).hexdigest();pkg=json.loads((ROOT/'package.json').read_text());app=UUID(pkg['pebble']['uuid']);systems=json.loads((ROOT/'systems.json').read_text());out=ROOT/'build/evidence';out.mkdir(exist_ok=True);state=Path(tempfile.mkdtemp(prefix='numerals-'+platform+'-',dir=ROOT/'build'))
  def persist(target,version=None):p=state/target;p.mkdir(exist_ok=True);return str(p)
  emulator.get_sdk_persist_dir=persist;emulator.get_emulator_info_path=lambda:str(state/'emulators.json');emulator.get_default_account=lambda:SimpleNamespace(is_logged_in=False)
  bridge=(out/f'{platform}-bridge.log').open('w');emulator.ManagedEmulatorTransport._get_output=lambda self:bridge
